@@ -1,6 +1,3 @@
--- Import the HTTP API
-os.loadAPI("http")
-
 -- A table to store repository URLs
 local repositories = {}
 

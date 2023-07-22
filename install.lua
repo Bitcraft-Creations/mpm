@@ -1,6 +1,3 @@
--- Import the HTTP API
-os.loadAPI("http")
-
 -- The URL of your GitHub repository
 local repo = "https://raw.githubusercontent.com/j-shelfwood/mpm/master/mpm/"
 
