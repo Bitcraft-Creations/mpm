@@ -31,12 +31,15 @@ end
 
 -- Function to install a package
 function Core.install(package)
-    for _, repo in ipairs(Core.repositories) do
-        if Core.downloadFile(repo .. package .. ".lua", "/mpm/packages/" .. package:gsub("/", "-") .. ".lua") then
-            return true
+    -- Iterate over all repositories
+    for _, repo in ipairs(repositories) do
+        -- Try to download the package
+        if downloadFile(repo .. "/main/" .. package .. ".lua", "/mpm/packages/" .. package:gsub("/", "-") .. ".lua") then
+            print("Package " .. package .. " installed successfully from " .. repo)
+            return
         end
     end
-    return false
+    print("Package not found.")
 end
 
 -- Function to uninstall a package

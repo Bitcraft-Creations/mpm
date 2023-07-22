@@ -49,7 +49,7 @@ print("(yes/no)")
 local answer = read()
 
 if answer == "yes" then
-    Core.tap_repository("https://github.com/j-shelfwood/mpm-packages")
+    Core.tap_repository("https://raw.githubusercontent.com/j-shelfwood/mpm")
 end
 
 print("MPM has been successfully installed.")
