@@ -1,5 +1,5 @@
 -- The URL of your GitHub repository
-local repo = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/mpm/"
+local repository_url = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/"
 
 -- A list of files to download
 local files = {"mpm.lua"}
@@ -32,7 +32,7 @@ end
 
 -- Download each file
 for _, file in ipairs(files) do
-    downloadFile(repo .. file, "/mpm/" .. file)
+    downloadFile(repository_url .. file, "/mpm/" .. file)
 end
 
 -- Load the mpm API
