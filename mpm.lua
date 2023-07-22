@@ -1,7 +1,10 @@
 -- mpm.lua
+-- Load the mpm API
+local env = {shell = shell, http = http, fs = fs} -- Add any other APIs as needed
+setmetatable(env, {__index = _G})
 
 -- Load the core.lua module
-local Core = dofile("/mpm/core.lua")
+local Core = setfenv(loadfile("/mpm/core.lua"), env)()
 
 -- get the command-line arguments
 local tArgs = {...}
