@@ -1,7 +1,3 @@
-Certainly! Here's a sample README.md file for your repository.
-
----
-
 # Minecraft Package Manager (MPM)
 
 MPM is a package manager for Minecraft's ComputerCraft mod. It allows you to manage scripts and utilities across your in-game computers, directly pulling from GitHub repositories.
