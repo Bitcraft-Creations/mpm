@@ -36,3 +36,9 @@ For example, to install a package called `my_package`, you would use the command
 ## Contributing
 
 You're welcome to contribute to MPM. Feel free to submit a Pull Request or open an issue if you have any ideas or run into any issues.
+
+## Todo:
+
+- Remove install.lua after installation
+- Show list of commands when only running 'mpm'
+- Fix `mpm` not being globally available as a command in the terminal

@@ -35,16 +35,20 @@ for _, file in ipairs(files) do
     downloadFile(repository_url .. file, "/mpm/" .. file)
 end
 
+shell.run("cp mpm/mpm.lua rom/programs")  -- move mpm.lua to the programs directory
+
 -- Load the mpm API
 os.loadAPI("/mpm/mpm.lua")
 
 -- Add the default repository
 print("Would you like to add the default package repository? (https://github.com/j-shelfwood/mpm-packages)")
 print("(yes/no)")
+
 local answer = read()
 
 if answer == "yes" then
     mpm.tap_repository("https://github.com/j-shelfwood/mpm-packages")
 end
 
-print("Installation completed.")
+print("MPM has been successfully installed.")
+fs.delete("install.sh")  -- remove the install script

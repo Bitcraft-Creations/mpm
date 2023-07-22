@@ -1,5 +1,50 @@
 -- A table to store repository URLs
 local repositories = {}
+-- get the command-line arguments
+local tArgs = {...} 
+-- the first argument is the command
+local command = tArgs[1] 
+
+local function printUsage()
+  print("Usage:")
+  print("mpm install <package>")
+  print("mpm uninstall <package>")
+  print("mpm tap_repository <repository url>")
+  print("mpm list_repositories")
+  print("mpm list_installed")
+end
+
+if not command then
+  printUsage()
+  return
+end
+
+if command == "install" then
+  if #tArgs < 2 then
+    print("Please provide a package name to install. Usage: mpm install <package>")
+    return
+  end
+  -- ... and so on for each command
+
+elseif command == "uninstall" then
+  if #tArgs < 2 then
+    print("Please provide a package name to uninstall. Usage: mpm uninstall <package>")
+    return
+  end
+  -- ... and so on for each command
+
+elseif command == "tap_repository" then
+  if #tArgs < 2 then
+    print("Please provide a repository URL. Usage: mpm tap_repository <repository url>")
+    return
+  end
+  -- ... and so on for each command
+
+else
+  print("Invalid command. Here's the list of valid commands:")
+  printUsage()
+end
+
 
 -- Function to download a file from a URL
 local function downloadFile(url, path)
