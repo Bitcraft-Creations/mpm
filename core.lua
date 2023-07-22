@@ -34,7 +34,7 @@ function Core.install(package)
     -- Iterate over all repositories
     for _, repo in ipairs(Core.repositories) do
         -- Try to download the package
-        if downloadFile(repo .. "/main/" .. package .. ".lua", "/mpm/packages/" .. package:gsub("/", "-") .. ".lua") then
+        if Core.downloadFile(repo .. "/main/" .. package .. ".lua", "/mpm/packages/" .. package:gsub("/", "-") .. ".lua") then
             print("Package " .. package .. " installed successfully from " .. repo)
             return
         end
