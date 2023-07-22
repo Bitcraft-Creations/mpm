@@ -1,59 +1,72 @@
--- Table to store repository URLs
+-- A table to store repository URLs
 local repositories = {}
+local MPM = {}
 
--- List of commands
-local commands = {
-    "install", "uninstall", "tap_repository", "list_repositories", 
-    "list_installed", "run"
-}
+-- get the command-line arguments
+local tArgs = {...} 
+-- the first argument is the command
+local command = tArgs[1] 
 
--- Command-line arguments
-local tArgs = {...}
-local command = tArgs[1]
-
--- Print usage instructions
 local function printUsage()
-    print("Usage:")
-    print("mpm install <package>")
-    print("mpm uninstall <package>")
-    print("mpm tap_repository <repository url>")
-    print("mpm list_repositories")
-    print("mpm list_installed")
-    print("mpm run <package>")
+  print("Usage:")
+  print("mpm install <package>")
+  print("mpm uninstall <package>")
+  print("mpm tap_repository <repository url>")
+  print("mpm list_repositories")
+  print("mpm list_installed")
+  print("mpm run <package>")
+  print("mpm test")
 end
 
--- Validate command
 if not command then
-    printUsage()
-    return
+  printUsage()
+  return
 end
 
-if not table.contains(commands, command) then
-    print("Invalid command. Here's the list of valid commands:")
-    printUsage()
+if command == "install" then
+  if #tArgs < 2 then
+    print("Please provide a package name to install. Usage: mpm install <package>")
     return
-end
+  end
 
--- Command-specific argument checks
-if command == "install" or command == "uninstall" or command == "run" then
-    if #tArgs < 2 then
-        print("Please provide a package name. Usage: mpm " .. command .. " <package>")
-        return
-    end
+elseif command == "uninstall" then
+  if #tArgs < 2 then
+    print("Please provide a package name to uninstall. Usage: mpm uninstall <package>")
+    return
+  end
+
 elseif command == "tap_repository" then
-    if #tArgs < 2 then
-        print("Please provide a repository URL. Usage: mpm tap_repository <repository url>")
-        return
-    end
+  if #tArgs < 2 then
+    print("Please provide a repository URL. Usage: mpm tap_repository <repository url>")
+    return
+  end
+
+elseif command == "run" then
+  if #tArgs < 2 then
+    print("Please provide a package name to run. Usage: mpm run <package>")
+    return
+  end
+
+elseif command == "test" then
+  print("Test command is executed.")
+  return
+
+else
+  print("Invalid command. Here's the list of valid commands:")
+  printUsage()
 end
 
--- Download file from URL
+-- Function to download a file from a URL
 local function downloadFile(url, path)
+    -- Download the file
     local response = http.get(url)
 
-    -- Check for successful request
+    -- If the request was successful, the status code will be 200
     if response and response.getResponseCode() == 200 then
+        -- Read the contents of the response
         local content = response.readAll()
+
+        -- Open a new file on the computer and write the contents into it
         local file = fs.open(path, "w")
         file.write(content)
         file.close()
@@ -64,15 +77,12 @@ local function downloadFile(url, path)
     end
 end
 
--- Add a new repository
-function tap_repository(repo)
+-- Function to add a new repository
+function MPM.tap_repository(repo)
     table.insert(repositories, repo)
     print("Added repository: " .. repo)
-    save_repositories()
-end
 
--- Save repositories to a file
-function save_repositories()
+    -- Save repositories to a file
     local file = fs.open("/mpm/repos.txt", "w")
     for _, repo in ipairs(repositories) do
         file.writeLine(repo)
@@ -80,44 +90,33 @@ function save_repositories()
     file.close()
 end
 
--- Install a package
-function install(package)
+-- Function to install a package
+function MPM.install(package)
+    -- Iterate over all repositories
     for _, repo in ipairs(repositories) do
-        if downloadFile(repo .. package .. ".lua", "/mpm/packages/" .. package .. ".lua") then
+        -- Try to download the package
+        if downloadFile(repo .. package .. ".lua", "/mpm/packages/" .. package:gsub("/", "-") .. ".lua") then
             print("Package " .. package .. " installed successfully from " .. repo)
             return
         end
     end
+
     print("Package not found.")
 end
 
--- Uninstall a package
-function uninstall(package)
-    fs.delete("/mpm/packages/" .. package .. ".lua")
+-- Function to uninstall a package
+function MPM.uninstall(package)
+    -- Delete the file
+    fs.delete("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")
     print("Package " .. package .. " removed.")
 end
 
--- Run a package
-function run(package)
-    shell.run("/mpm/packages/" .. package .. ".lua")
+-- Function to run a package
+function MPM.run(package)
+    shell.run("/mpm/packages/" .. package)
 end
 
--- List installed packages
-function list_installed()
-    local files = fs.list("/mpm/packages")
-    local packages = {}
-    for _, file in ipairs(files) do
-        if file:sub(-4) == ".lua" then
-            table.insert(packages, file:sub(1, -5))  -- Remove the extension
-        end
-    end
-
-    for _, package in ipairs(packages) do
-        print(package)
-    end
-end
-
--- Load repositories from a file
+-- Load the list of repositories from a file
 if fs.exists("/mpm/repos.txt") then
     local file = fs.open("/mpm/repos.txt", "r")
     while true do
@@ -128,23 +127,4 @@ if fs.exists("/mpm/repos.txt") then
     file.close()
 end
 
--- Execute the command
-if command == 'tap_repository' then
-    tap_repository(tArgs[2])
-elseif command == 'install' then
-    install(tArgs[2])
-elseif command == 'uninstall' then
-    uninstall(tArgs[2])
-elseif command == 'run' then
-    run(tArgs[2])
-elseif command == 'list_installed' then
-    list_installed()
-end
-
-return {
-    tap_repository = tap_repository,
-    install = install,
-    uninstall = uninstall,
-    run = run,
-    list_installed = list_installed
-}
+return MPM
