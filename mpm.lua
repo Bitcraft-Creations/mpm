@@ -140,3 +140,11 @@ elseif command == 'run' then
 elseif command == 'list_installed' then
     list_installed()
 end
+
+return {
+    tap_repository = tap_repository,
+    install = install,
+    uninstall = uninstall,
+    run = run,
+    list_installed = list_installed
+}
