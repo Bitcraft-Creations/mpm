@@ -1,5 +1,5 @@
 -- The URL of your GitHub repository
-local repo = "https://raw.githubusercontent.com/j-shelfwood/mpm/master/mpm/"
+local repo = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/mpm/"
 
 -- A list of files to download
 local files = {"mpm.lua"}
@@ -44,7 +44,7 @@ print("(yes/no)")
 local answer = read()
 
 if answer == "yes" then
-    mpm.tap_repository("https://github.com/j-shelfwood/mpm-packages/")
+    mpm.tap_repository("https://github.com/j-shelfwood/mpm-packages")
 end
 
 print("Installation completed.")
