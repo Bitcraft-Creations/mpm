@@ -27,8 +27,6 @@ if command == "install" then
   end
   if Core.install(tArgs[2]) then
     print("Package " .. tArgs[2] .. " installed successfully.")
-  else
-    print("Package " .. tArgs[2] .. " could not be installed.")
   end
 elseif command == "uninstall" then
   if #tArgs < 2 then
