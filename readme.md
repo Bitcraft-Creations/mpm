@@ -7,7 +7,7 @@ MPM is a package manager for Minecraft's ComputerCraft mod. It allows you to man
 1. Use the Pastebin `get` command to download the `install.lua` file to your in-game computer. Replace `pastebin_link` with the link to your Pastebin.
 
    ```
-   pastebin get https://pastebin.com/X6t1t0fY install.lua
+   pastebin get https://pastebin.com/E2gSqTTw install.lua
    ```
 
 2. Run the `install.lua` script. This will download the necessary package manager files from this repository to your in-game computer.
