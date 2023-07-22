@@ -24,22 +24,18 @@ if command == "install" then
     print("Please provide a package name to install. Usage: mpm install <package>")
     return
   end
-  -- ... and so on for each command
 
 elseif command == "uninstall" then
   if #tArgs < 2 then
     print("Please provide a package name to uninstall. Usage: mpm uninstall <package>")
     return
   end
-  -- ... and so on for each command
 
 elseif command == "tap_repository" then
   if #tArgs < 2 then
     print("Please provide a repository URL. Usage: mpm tap_repository <repository url>")
     return
   end
-  -- ... and so on for each command
-
 else
   print("Invalid command. Here's the list of valid commands:")
   printUsage()
@@ -143,12 +139,22 @@ if fs.exists("/mpm/repos.txt") then
     file.close()
 end
 
--- Return the table of functions so they can be used by other scripts
-return {
-    tap_repository = tap_repository,
-    install = install,
-    update = update,
-    remove = remove,
-    list = list,
-    available = available
-}
+if _G.arg ~= nil then
+    -- We are running as a standalone program, so interpret command-line arguments
+    local command = _G.arg[1]
+    if command == 'tap_repository' then
+        tap_repository(_G.arg[2])
+    elseif command == 'install' then
+        install(_G.arg[2])
+    elseif command == 'update' then
+        update(_G.arg[2])
+    elseif command == 'remove' then
+        remove(_G.arg[2])
+    elseif command == 'list' then
+        list()
+    elseif command == 'available' then
+        available()
+    else
+        printUsage()
+    end
+end
