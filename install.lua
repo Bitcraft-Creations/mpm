@@ -42,11 +42,12 @@ end
 os.loadAPI("/mpm/mpm.lua")
 
 -- Add the default repository
-print("Would you like to add the default package repository? (yes/no)")
+print("Would you like to add the default package repository? (https://github.com/j-shelfwood/mpm-packages)")
+print("(yes/no)")
 local answer = read()
 
 if answer == "yes" then
-    mpm.tap_repository("https://github.com/username/repo/")
+    mpm.tap_repository("https://github.com/j-shelfwood/mpm-packages/")
 end
 
 print("Installation completed.")
