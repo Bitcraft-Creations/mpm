@@ -1,4 +1,4 @@
--- core.lua
+-- core.lua (the package manager API)
 
 local Core = {} -- Create a table to hold the package manager functionalities.
 
@@ -29,18 +29,39 @@ function Core.tap_repository(repo)
     file.close()
 end
 
+-- Function to list installed packages
+function Core.list()
+    local files = fs.list("/mpm/packages/")
+    return files
+end
+
 -- Function to install a package
 function Core.install(package)
     -- Iterate over all repositories
     for _, repo in ipairs(Core.repositories) do
-        -- Try to download the package
-        if Core.downloadFile(repo .. "/main/" .. package .. ".lua", "/mpm/packages/" .. package:gsub("/", "-") .. ".lua") then
-            print("Package " .. package .. " installed successfully from " .. repo)
+        local newPackagePath = "/mpm/packages/" .. package:gsub("/", "-") .. ".lua"
+        local oldPackageContent = nil
+        if fs.exists(newPackagePath) then
+            local oldPackageFile = fs.open(newPackagePath, "r")
+            oldPackageContent = oldPackageFile.readAll()
+            oldPackageFile.close()
+        end
+        -- Try to download the new package
+        if Core.downloadFile(repo .. "/main/" .. package .. ".lua", newPackagePath) then
+            local newPackageFile = fs.open(newPackagePath, "r")
+            local newPackageContent = newPackageFile.readAll()
+            newPackageFile.close()
+            if oldPackageContent ~= newPackageContent then
+                print("Package " .. package .. " installed successfully from " .. repo .. " with changes.")
+            else
+                print("Package " .. package .. " reinstalled from " .. repo .. " without changes.")
+            end
             return
         end
     end
     print("Package not found.")
 end
+
 
 -- Function to uninstall a package
 function Core.uninstall(package)
