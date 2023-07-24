@@ -68,9 +68,8 @@ function Core.uninstall(package)
     fs.delete("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")
 end
 
--- Function to run a package
-function Core.run(package)
-    shell.run("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")
+function Core.run(package, ...)
+    shell.run("/mpm/packages/" .. package .. ".lua", ...)
 end
 
 -- Load the list of repositories from a file

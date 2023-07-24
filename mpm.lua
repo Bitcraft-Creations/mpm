@@ -37,7 +37,7 @@ if commandMapping[command] then
     print("Please provide a valid argument for the command. Usage: mpm " .. command .. " <argument>")
     return
   end
-  local success, message = pcall(commandMapping[command], tArgs[2])
+  local success, message = pcall(commandMapping[command], select(2, table.unpack(tArgs)))
   if success then
     print("Command " .. command .. " executed successfully.")
   else
