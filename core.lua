@@ -13,9 +13,9 @@ function Core.downloadFile(url, path)
         local file = fs.open(path, "w")
         file.write(content)
         file.close()
-        return true
+        return content
     else
-        return false
+        return nil
     end
 end
 
@@ -27,12 +27,16 @@ function Core.tap_repository(repo)
         file.writeLine(repo)
     end
     file.close()
+    print("\nRepository " .. repo .. " added successfully.")
 end
 
 -- Function to list installed packages
 function Core.list()
+    print("\nListing installed packages:")
     local files = fs.list("/mpm/packages/")
-    return files
+    for _, file in ipairs(files) do
+        print("  - " .. file)
+    end
 end
 
 -- Function to install a package
@@ -47,29 +51,34 @@ function Core.install(package)
             oldPackageFile.close()
         end
         -- Try to download the new package
-        if Core.downloadFile(repo .. "/main/" .. package .. ".lua", newPackagePath) then
-            local newPackageFile = fs.open(newPackagePath, "r")
-            local newPackageContent = newPackageFile.readAll()
-            newPackageFile.close()
-            if oldPackageContent ~= newPackageContent then
-                print("Package " .. package .. " installed successfully from " .. repo .. " with changes.")
+        while true do
+            local newPackageContent = Core.downloadFile(repo .. "/main/" .. package .. ".lua", newPackagePath)
+            if newPackageContent then
+                if oldPackageContent ~= newPackageContent then
+                    print("\nPackage " .. package .. " installed successfully from " .. repo .. " with changes.")
+                    return
+                else
+                    print("\nPackage " .. package .. " reinstalled from " .. repo .. " without changes.")
+                    print("Checking again in 2 seconds...")
+                    os.sleep(2) -- Sleep for 2 seconds
+                end
             else
-                print("Package " .. package .. " reinstalled from " .. repo .. " without changes.")
+                break
             end
-            return
         end
     end
-    print("Package not found.")
+    print("\nPackage not found.")
 end
-
 
 -- Function to uninstall a package
 function Core.uninstall(package)
     fs.delete("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")
+    print("\nPackage " .. package .. " uninstalled successfully.")
 end
 
 function Core.run(package, ...)
     shell.run("/mpm/packages/" .. package .. ".lua", ...)
+    print("\nPackage " .. package .. " run successfully.")
 end
 
 -- Load the list of repositories from a file
