@@ -70,6 +70,35 @@ function Core.install(package)
     print("\nPackage not found.")
 end
 
+-- Function to update core.lua and mpm.lua
+function Core.self_update()
+    local urls = {
+        ["core.lua"] = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/core.lua",
+        ["mpm.lua"] = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/mpm.lua"
+    }
+    local updates = {}
+    for file, url in pairs(urls) do
+        local oldContent = nil
+        if fs.exists("/mpm/" .. file) then
+            local oldFile = fs.open("/mpm/" .. file, "r")
+            oldContent = oldFile.readAll()
+            oldFile.close()
+        end
+        local newContent = Core.downloadFile(url, "/mpm/" .. file)
+        if newContent and oldContent ~= newContent then
+            updates[file] = true
+        end
+    end
+    if next(updates) then
+        for file, _ in pairs(updates) do
+            print("\nFile " .. file .. " has been updated successfully.")
+        end
+    else
+        print("\nNo updates found.")
+    end
+end
+
+
 -- Function to uninstall a package
 function Core.uninstall(package)
     fs.delete("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")

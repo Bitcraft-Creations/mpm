@@ -20,6 +20,7 @@ local commandMapping = {
   tap_repository = Core.tap_repository,
   list = Core.list,
   run = Core.run,
+  self_update = Core.self_update,
 }
 
 local function printUsage()
@@ -29,6 +30,7 @@ local function printUsage()
   print("mpm tap_repository <repository url>")
   print("mpm list")
   print("mpm run <package>")
+  print("mpm self_update")
 end
 
 -- Check the provided command and execute the appropriate function
