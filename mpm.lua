@@ -35,13 +35,9 @@ end
 
 -- Check the provided command and execute the appropriate function
 if commandMapping[command] then
-  if #tArgs < 2 then
-    print("Please provide a valid argument for the command. Usage: mpm " .. command .. " <argument>")
-    return
-  end
   local success, message = pcall(commandMapping[command], select(2, table.unpack(tArgs)))
   if success then
-    print("Command " .. command .. " executed successfully.")
+    print("\n")
   else
     print("An error occurred: " .. message)
   end
