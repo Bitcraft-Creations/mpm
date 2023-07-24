@@ -51,24 +51,20 @@ function Core.install(package)
             oldPackageFile.close()
         end
         -- Try to download the new package
-        while true do
-            local newPackageContent = Core.downloadFile(repo .. "/main/" .. package .. ".lua", newPackagePath)
-            if newPackageContent then
-                if oldPackageContent ~= newPackageContent then
-                    print("\nPackage " .. package .. " installed successfully from " .. repo .. " with changes.")
-                    return
-                else
-                    print("\nPackage " .. package .. " reinstalled from " .. repo .. " without changes.")
-                    print("Checking again in 2 seconds...")
-                    os.sleep(2) -- Sleep for 2 seconds
-                end
+        local newPackageContent = Core.downloadFile(repo .. "/main/" .. package .. ".lua", newPackagePath)
+        if newPackageContent then
+            if oldPackageContent ~= newPackageContent then
+                print("\nPackage " .. package .. " installed successfully from " .. repo .. " with changes.")
             else
-                break
+                print("\nPackage " .. package .. " reinstalled from " .. repo .. " without changes.")
+                print("If you've recently updated the package, wait a few minutes for GitHub's cache to update before reinstalling.")
             end
+            return
         end
     end
     print("\nPackage not found.")
 end
+
 
 -- Function to update core.lua and mpm.lua
 function Core.self_update()
