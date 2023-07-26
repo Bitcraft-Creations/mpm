@@ -2,9 +2,6 @@
 -- The URL of your GitHub repository
 local repository_url = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/"
 
--- A list of files to download
-local files = dofile("filelist.lua")
-
 -- Function to download a file from a URL
 local function downloadFile(url, path)
     local response = http.get(url)
@@ -29,6 +26,12 @@ if not fs.exists("/mpm/packages") then
     fs.makeDir("/mpm/packages")
 end
 
+-- Download filelist.lua
+downloadFile(repository_url .. "filelist.lua", "/mpm/filelist.lua")
+
+-- Load the filelist
+local files = dofile("/mpm/filelist.lua")
+
 -- Download each file
 for _, file in ipairs(files) do
     if file == "mpm.lua" then
@@ -52,4 +55,5 @@ if answer == "yes" then
 end
 
 print("MPM has been successfully installed.")
+fs.delete("/mpm/filelist.lua") -- remove the filelist script
 fs.delete("install.lua") -- remove the install script
