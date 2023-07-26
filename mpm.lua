@@ -1,7 +1,13 @@
 -- mpm.lua
 -- Load the mpm API
-local env = {shell = shell, http = http, fs = fs} -- Add any other APIs as needed
-setmetatable(env, {__index = _G})
+local env = {
+    shell = shell,
+    http = http,
+    fs = fs
+} -- Add any other APIs as needed
+setmetatable(env, {
+    __index = _G
+})
 
 -- Load the core.lua module
 local Core = setfenv(loadfile("/mpm/core.lua"), env)()
@@ -15,33 +21,34 @@ local command = tArgs[1]
 
 -- Functionality mapping
 local commandMapping = {
-  install = Core.install,
-  uninstall = Core.uninstall,
-  tap_repository = Core.tap_repository,
-  list = Core.list,
-  run = Core.run,
-  self_update = Core.self_update,
+    install = Core.install,
+    remove = Core.remove,
+    tap_repository = Core.tap_repository,
+    list = Core.list,
+    run = Core.run,
+    self_update = Core.self_update,
+    update = Core.update
 }
 
 local function printUsage()
-  print("Usage:")
-  print("mpm install <package>")
-  print("mpm uninstall <package>")
-  print("mpm tap_repository <repository url>")
-  print("mpm list")
-  print("mpm run <package>")
-  print("mpm self_update")
+    print("Usage:")
+    print("mpm install <package>")
+    print("mpm remove <package>")
+    print("mpm tap_repository <repository url>")
+    print("mpm list")
+    print("mpm run <package>")
+    print("mpm self_update")
+    print("mpm update <package>")
 end
 
--- Check the provided command and execute the appropriate function
+-- Handle command
 if commandMapping[command] then
-  local success, message = pcall(commandMapping[command], select(2, table.unpack(tArgs)))
-  if success then
-    print("\n")
-  else
-    print("An error occurred: " .. message)
-  end
+    if select('#', ...) >= 3 then
+        commandMapping[command](select(3, ...))
+    else
+        commandMapping[command]()
+    end
 else
-  print("Invalid command. Here's the list of valid commands:")
-  printUsage()
+    printUsage()
 end
+

@@ -1,5 +1,4 @@
 -- core.lua (the package manager API)
-
 local Core = {} -- Create a table to hold the package manager functionalities.
 
 -- A table to store repository URLs
@@ -57,14 +56,14 @@ function Core.install(package)
                 print("\nPackage " .. package .. " installed successfully from " .. repo .. " with changes.")
             else
                 print("\nPackage " .. package .. " reinstalled from " .. repo .. " without changes.")
-                print("If you've recently updated the package, wait a few minutes for GitHub's cache to update before reinstalling.")
+                print(
+                    "If you've recently updated the package, wait a few minutes for GitHub's cache to update before reinstalling.")
             end
             return
         end
     end
     print("\nPackage not found.")
 end
-
 
 -- Function to update core.lua and mpm.lua
 function Core.self_update()
@@ -94,11 +93,52 @@ function Core.self_update()
     end
 end
 
+-- Function to update a package
+function Core.update(package)
+    local Printer = dofile("/mpm/printer.lua")
 
--- Function to uninstall a package
-function Core.uninstall(package)
+    if package then -- If package name is provided
+        Printer.printHeader("Updating package: " .. package)
+        Core.updateSinglePackage(package, Printer)
+    else -- If no package name is provided
+        Printer.printHeader("Updating all packages")
+        local files = fs.list("/mpm/packages/")
+        for _, package in ipairs(files) do
+            local packageName = string.gsub(package, "%.lua", "")
+            Core.updateSinglePackage(packageName, Printer)
+        end
+    end
+end
+
+-- Helper function to update a single package
+function Core.updateSinglePackage(package, Printer)
+    -- Iterate over all repositories
+    for _, repo in ipairs(Core.repositories) do
+        local newPackagePath = "/mpm/packages/" .. package:gsub("/", "-") .. ".lua"
+        local oldPackageContent = nil
+        if fs.exists(newPackagePath) then
+            local oldPackageFile = fs.open(newPackagePath, "r")
+            oldPackageContent = oldPackageFile.readAll()
+            oldPackageFile.close()
+        end
+        -- Try to download the new package
+        local newPackageContent = Core.downloadFile(repo .. "/main/" .. package .. ".lua", newPackagePath)
+        if newPackageContent then
+            if oldPackageContent ~= newPackageContent then
+                Printer.print("\nPackage " .. package .. " updated successfully from " .. repo .. " with changes.")
+            else
+                Printer.printWarning("\nPackage " .. package .. " is already up to date. No changes detected.")
+            end
+            return
+        end
+    end
+    Printer.printWarning("\nPackage not found.")
+end
+
+-- Function to remove a package
+function Core.remove(package)
     fs.delete("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")
-    print("\nPackage " .. package .. " uninstalled successfully.")
+    print("\nPackage " .. package .. " removed successfully.")
 end
 
 function Core.run(package, ...)
@@ -111,7 +151,9 @@ if fs.exists("/mpm/repos.txt") then
     local file = fs.open("/mpm/repos.txt", "r")
     while true do
         local line = file.readLine()
-        if line == nil then break end
+        if line == nil then
+            break
+        end
         table.insert(Core.repositories, line)
     end
     file.close()
