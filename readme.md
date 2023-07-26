@@ -1,44 +1,45 @@
 # Minecraft Package Manager (MPM)
 
-MPM is a package manager for Minecraft's ComputerCraft mod. It allows you to manage scripts and utilities across your in-game computers, directly pulling from GitHub repositories.
+MPM is a package manager for Minecraft's ComputerCraft mod. With MPM, you can easily manage and update scripts and utilities across your in-game computers, pulling directly from GitHub repositories.
 
 ## Installation
 
-1. Use the Pastebin `get` command to download the `install.lua` file to your in-game computer. Replace `pastebin_link` with the link to your Pastebin.
+1. Download the `install.lua` file to your in-game computer using the Pastebin `get` command. Replace `pastebin_link` with the link to the Pastebin.
 
    ```
-   pastebin get https://pastebin.com/0kymi4gc install.lua
+   pastebin get pastebin_link install.lua
    ```
 
-2. Run the `install.lua` script. This will download the necessary package manager files from this repository to your in-game computer.
+2. Run the `install.lua` script to install MPM. This script will automatically download the necessary package manager files from the MPM GitHub repository.
 
    ```
    install
    ```
 
-3. During installation, you'll be asked if you want to add the default package repository. This repository contains a number of handy utilities. Enter `yes` to add this repository.
+3. During installation, you will be prompted to add the default package repository. This repository contains a variety of useful packages. To add this repository, simply enter `yes` when prompted.
 
 ## Usage
 
-Once installed, you'll have access to the following commands:
+Once MPM is installed, you can use the following commands:
 
-- `mpm.tap_repository('url')`: This function allows you to add a new repository to the list of tapped repositories.
-- `mpm.install('package')`: Use this function to install a package from the available repositories.
-- `mpm.update('package')`: This function updates an already installed package.
-- `mpm.remove('package')`: This function allows you to remove a package.
-- `mpm.list()`: This function lists all installed packages.
-- `mpm.available()`: This function lists all available packages from the tapped repositories.
+- `mpm tap_repository <repository url>`: Add a new repository to your list of tapped repositories.
+- `mpm install <package>`: Install a package from the tapped repositories.
+- `mpm update [package]`: Update a specific package or all packages if no package name is provided.
+- `mpm remove <package>`: Remove a specific package.
+- `mpm list`: List all installed packages.
+- `mpm run <package>`: Run a specific package.
+- `mpm self_update`: Update the MPM system itself.
 
-Replace `'url'` and `'package'` with the URL of the repository or the name of the package respectively.
-
-For example, to install a package called `my_package`, you would use the command `mpm.install('my_package')`.
+For instance, to install a package named `my_package`, you would use the command `mpm install my_package`.
 
 ## Contributing
 
-You're welcome to contribute to MPM. Feel free to submit a Pull Request or open an issue if you have any ideas or run into any issues.
+Contributions to MPM are welcomed. Feel free to submit a Pull Request or open an issue if you have any ideas or encounter any problems.
 
-## Todo:
+## Updates:
 
-- Remove install.lua after installation
-- Show list of commands when only running 'mpm'
-- Fix `mpm` not being globally available as a command in the terminal
+- Installation process now automatically deletes `install.lua` after completion.
+- Running just `mpm` now displays the list of available commands.
+- Fixed the issue with `mpm` not being globally accessible from the terminal.
+- Introduced `mpm self_update` command to keep MPM up to date.
+- `mpm update` now allows updating all packages when no package name is provided.
