@@ -67,13 +67,11 @@ end
 
 -- Function to update core.lua and mpm.lua
 function Core.self_update()
-    local urls = {
-        ["core.lua"] = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/core.lua",
-        ["mpm.lua"] = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/mpm.lua",
-        ["printer.lua"] = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/mpm.lua"
-    }
+    local files = dofile("/mpm/filelist.lua")
+
     local updates = {}
-    for file, url in pairs(urls) do
+    for _, file in ipairs(files) do
+        local url = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/" .. file
         local oldContent = nil
         if fs.exists("/mpm/" .. file) then
             local oldFile = fs.open("/mpm/" .. file, "r")

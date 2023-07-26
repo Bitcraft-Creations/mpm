@@ -43,8 +43,8 @@ end
 
 -- Handle command
 if commandMapping[command] then
-    if select('#', ...) >= 3 then
-        commandMapping[command](select(3, ...))
+    if select('#', ...) >= 2 then
+        commandMapping[command](select(2, ...))
     else
         commandMapping[command]()
     end

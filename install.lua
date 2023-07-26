@@ -3,7 +3,7 @@
 local repository_url = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/"
 
 -- A list of files to download
-local files = {"mpm.lua", "core.lua", "printer.lua"}
+local files = dofile("filelist.lua")
 
 -- Function to download a file from a URL
 local function downloadFile(url, path)
