@@ -69,7 +69,8 @@ end
 function Core.self_update()
     local urls = {
         ["core.lua"] = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/core.lua",
-        ["mpm.lua"] = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/mpm.lua"
+        ["mpm.lua"] = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/mpm.lua",
+        ["printer.lua"] = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/mpm.lua"
     }
     local updates = {}
     for file, url in pairs(urls) do

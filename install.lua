@@ -1,10 +1,9 @@
 -- install.lua
-
 -- The URL of your GitHub repository
 local repository_url = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/"
 
 -- A list of files to download
-local files = {"mpm.lua", "core.lua"}
+local files = {"mpm.lua", "core.lua", "printer.lua"}
 
 -- Function to download a file from a URL
 local function downloadFile(url, path)
@@ -53,4 +52,4 @@ if answer == "yes" then
 end
 
 print("MPM has been successfully installed.")
-fs.delete("install.lua")  -- remove the install script
+fs.delete("install.lua") -- remove the install script
