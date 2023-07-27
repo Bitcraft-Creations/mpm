@@ -65,33 +65,6 @@ function Core.install(package)
     Printer.print("\nPackage not found.")
 end
 
--- Function to update core.lua and mpm.lua
-function Core.self_update()
-    local files = dofile("/mpm/filelist.lua")
-
-    local updates = {}
-    for _, file in ipairs(files) do
-        local url = "https://shelfwood-mpm.netlify.app/" .. file
-        local oldContent = nil
-        if fs.exists("/mpm/" .. file) then
-            local oldFile = fs.open("/mpm/" .. file, "r")
-            oldContent = oldFile.readAll()
-            oldFile.close()
-        end
-        local newContent = Core.downloadFile(url, "/mpm/" .. file)
-        if newContent and oldContent ~= newContent then
-            updates[file] = true
-        end
-    end
-    if next(updates) then
-        for file, _ in pairs(updates) do
-            print("\nFile " .. file .. " has been updated successfully.")
-        end
-    else
-        Printer.print("\nNo updates found.")
-    end
-end
-
 -- Function to update a package
 function Core.update(package)
     if package then -- If package name is provided
@@ -105,6 +78,57 @@ function Core.update(package)
             Core.updateSinglePackage(packageName, Printer)
         end
     end
+end
+
+-- Function to update MPM
+function Core.self_update()
+    Printer.print("Updating MPM...")
+
+    -- Set the repository URL to the install repository
+    local repository_url = "https://shelfwood-mpm-packages.netlify.app/"
+
+    -- Download filelist.lua from the install repository
+    local filelist_content = Core.downloadFile(repository_url .. "filelist.lua", "/mpm/filelist.lua")
+
+    -- Load the filelist
+    local files = load(filelist_content)()
+
+    -- Check for updates
+    local updates = {}
+    local new_files = {}
+    for _, file in ipairs(files) do
+        local url = repository_url .. file
+        local oldContent = nil
+        if fs.exists("/mpm/" .. file) then
+            local oldFile = fs.open("/mpm/" .. file, "r")
+            oldContent = oldFile.readAll()
+            oldFile.close()
+        else
+            new_files[#new_files + 1] = file
+        end
+        local newContent = Core.downloadFile(url, "/mpm/" .. file)
+        if newContent and oldContent ~= newContent then
+            updates[file] = true
+        end
+    end
+
+    -- Show output to the user
+    if next(updates) then
+        for file, _ in pairs(updates) do
+            Printer.print("File " .. file .. " has been updated successfully.")
+        end
+    else
+        Printer.print("No updates found.")
+    end
+
+    if #new_files > 0 then
+        Printer.print("The following new files have been downloaded:")
+        for _, file in ipairs(new_files) do
+            Printer.print("- " .. file)
+        end
+    end
+
+    Printer.print("MPM updated successfully.")
 end
 
 -- Helper function to update a single package
@@ -135,7 +159,7 @@ end
 -- Function to remove a package
 function Core.remove(package)
     fs.delete("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")
-    Printer.print("\nPackage " .. package .. " removed successfully.")
+    print("\nPackage " .. package .. " removed successfully.")
 end
 
 function Core.run(package, ...)
