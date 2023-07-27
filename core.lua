@@ -85,7 +85,7 @@ function Core.self_update()
     Printer.print("Updating MPM...")
 
     -- Set the repository URL to the install repository
-    local repository_url = "https://shelfwood-mpm-packages.netlify.app/"
+    local repository_url = "https://shelfwood-mpm.netlify.app/"
 
     -- Download filelist.lua from the install repository
     local filelist_content = Core.downloadFile(repository_url .. "filelist.lua", "/mpm/filelist.lua")
