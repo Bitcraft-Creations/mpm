@@ -119,7 +119,7 @@ function Core.updateSinglePackage(package, Printer)
             oldPackageFile.close()
         end
         -- Try to download the new package
-        local newPackageContent = Core.downloadFile(repo .. "/main/" .. package .. ".lua", newPackagePath)
+        local newPackageContent = Core.downloadFile(package .. ".lua", newPackagePath)
         if newPackageContent then
             if oldPackageContent ~= newPackageContent then
                 Printer.print("\nPackage " .. package .. " updated successfully from " .. repo .. " with changes.")
@@ -140,7 +140,6 @@ end
 
 function Core.run(package, ...)
     shell.run("/mpm/packages/" .. package .. ".lua", ...)
-    print("\nPackage " .. package .. " run successfully.")
 end
 
 -- Load the list of repositories from a file
