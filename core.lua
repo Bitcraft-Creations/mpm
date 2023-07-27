@@ -71,7 +71,7 @@ function Core.self_update()
 
     local updates = {}
     for _, file in ipairs(files) do
-        local url = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/" .. file
+        local url = "https://shelfwood-mpm.netlify.app/" .. file
         local oldContent = nil
         if fs.exists("/mpm/" .. file) then
             local oldFile = fs.open("/mpm/" .. file, "r")

@@ -1,6 +1,5 @@
 -- install.lua
--- The URL of your GitHub repository
-local repository_url = "https://raw.githubusercontent.com/j-shelfwood/mpm/main/"
+local mpm_repository_url = "https://shelfwood-mpm.netlify.app/"
 
 -- Function to download a file from a URL
 local function downloadFile(url, path)
@@ -27,7 +26,7 @@ if not fs.exists("/mpm/packages") then
 end
 
 -- Download filelist.lua
-downloadFile(repository_url .. "filelist.lua", "/mpm/filelist.lua")
+downloadFile(mpm_repository_url .. "filelist.lua", "/mpm/filelist.lua")
 
 -- Load the filelist
 local files = dofile("/mpm/filelist.lua")
@@ -35,9 +34,9 @@ local files = dofile("/mpm/filelist.lua")
 -- Download each file
 for _, file in ipairs(files) do
     if file == "mpm.lua" then
-        downloadFile(repository_url .. file, "/" .. file)
+        downloadFile(mpm_repository_url .. file, "/" .. file)
     else
-        downloadFile(repository_url .. file, "/mpm/" .. file)
+        downloadFile(mpm_repository_url .. file, "/mpm/" .. file)
     end
 end
 
@@ -51,7 +50,7 @@ print("(yes/no)")
 local answer = read()
 
 if answer == "yes" then
-    Core.tap_repository("https://raw.githubusercontent.com/j-shelfwood/mpm-packages")
+    Core.tap_repository("https://shelfwood-mpm-packages.netlify.app/")
 end
 
 print("MPM has been successfully installed.")
