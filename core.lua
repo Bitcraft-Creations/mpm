@@ -56,8 +56,6 @@ function Core.install(package)
                 print("\nPackage " .. package .. " installed successfully from " .. repo .. " with changes.")
             else
                 print("\nPackage " .. package .. " reinstalled from " .. repo .. " without changes.")
-                print(
-                    "If you've recently updated the package, wait a few minutes for GitHub's cache to update before reinstalling.")
             end
             return
         end
