@@ -1,6 +1,8 @@
 -- core.lua (the package manager API)
 local Core = {} -- Create a table to hold the package manager functionalities.
 
+local Printer = dofile("/mpm/printer.lua")
+
 -- A table to store repository URLs
 Core.repositories = {}
 
@@ -26,15 +28,15 @@ function Core.tap_repository(repo)
         file.writeLine(repo)
     end
     file.close()
-    print("\nRepository " .. repo .. " added successfully.")
+    Printer.print("\nRepository " .. repo .. " added successfully.")
 end
 
 -- Function to list installed packages
 function Core.list()
-    print("\nListing installed packages:")
+    Printer.print("\nListing installed packages:")
     local files = fs.list("/mpm/packages/")
     for _, file in ipairs(files) do
-        print("  - " .. file)
+        Printer.print("  - " .. file)
     end
 end
 
@@ -53,14 +55,14 @@ function Core.install(package)
         local newPackageContent = Core.downloadFile(repo .. package .. ".lua", newPackagePath)
         if newPackageContent then
             if oldPackageContent ~= newPackageContent then
-                print("\nPackage " .. package .. " installed successfully from " .. repo .. " with changes.")
+                Printer.print("\nPackage " .. package .. " installed successfully from " .. repo .. " with changes.")
             else
-                print("\nPackage " .. package .. " reinstalled from " .. repo .. " without changes.")
+                Printer.print("\nPackage " .. package .. " reinstalled from " .. repo .. " without changes.")
             end
             return
         end
     end
-    print("\nPackage not found.")
+    Printer.print("\nPackage not found.")
 end
 
 -- Function to update core.lua and mpm.lua
@@ -86,14 +88,12 @@ function Core.self_update()
             print("\nFile " .. file .. " has been updated successfully.")
         end
     else
-        print("\nNo updates found.")
+        Printer.print("\nNo updates found.")
     end
 end
 
 -- Function to update a package
 function Core.update(package)
-    local Printer = dofile("/mpm/printer.lua")
-
     if package then -- If package name is provided
         Printer.printHeader("Updating package: " .. package)
         Core.updateSinglePackage(package, Printer)
@@ -119,7 +119,7 @@ function Core.updateSinglePackage(package, Printer)
             oldPackageFile.close()
         end
         -- Try to download the new package
-        local newPackageContent = Core.downloadFile(package .. ".lua", newPackagePath)
+        local newPackageContent = Core.downloadFile(repo .. package .. ".lua", newPackagePath)
         if newPackageContent then
             if oldPackageContent ~= newPackageContent then
                 Printer.print("\nPackage " .. package .. " updated successfully from " .. repo .. " with changes.")
@@ -135,7 +135,7 @@ end
 -- Function to remove a package
 function Core.remove(package)
     fs.delete("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")
-    print("\nPackage " .. package .. " removed successfully.")
+    Printer.print("\nPackage " .. package .. " removed successfully.")
 end
 
 function Core.run(package, ...)
