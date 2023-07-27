@@ -36,7 +36,7 @@ for _, file in ipairs(files) do
     downloadFile(mpm_repository_url .. file, "/mpm/" .. file)
     if file == "mpm.lua" then
         fs.copy("/mpm/mpm.lua", "/" .. file)
-    else
+    end
 end
 
 -- Load the core.lua API
