@@ -50,7 +50,7 @@ function Core.install(package)
             oldPackageFile.close()
         end
         -- Try to download the new package
-        local newPackageContent = Core.downloadFile(repo .. "/main/" .. package .. ".lua", newPackagePath)
+        local newPackageContent = Core.downloadFile(repo .. package .. ".lua", newPackagePath)
         if newPackageContent then
             if oldPackageContent ~= newPackageContent then
                 print("\nPackage " .. package .. " installed successfully from " .. repo .. " with changes.")
