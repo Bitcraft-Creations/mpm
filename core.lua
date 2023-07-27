@@ -109,6 +109,10 @@ function Core.self_update()
         local newContent = Core.downloadFile(url, "/mpm/" .. file)
         if newContent and oldContent ~= newContent then
             updates[file] = true
+            -- If the file is mpm.lua then copy it to the root directory
+            if file == "mpm.lua" then
+                fs.copy("/mpm/mpm.lua", "/" .. file)
+            end
         end
     end
 

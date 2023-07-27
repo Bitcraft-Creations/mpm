@@ -33,11 +33,10 @@ local files = dofile("/mpm/filelist.lua")
 
 -- Download each file
 for _, file in ipairs(files) do
+    downloadFile(mpm_repository_url .. file, "/mpm/" .. file)
     if file == "mpm.lua" then
-        downloadFile(mpm_repository_url .. file, "/" .. file)
+        fs.copy("/mpm/mpm.lua", "/" .. file)
     else
-        downloadFile(mpm_repository_url .. file, "/mpm/" .. file)
-    end
 end
 
 -- Load the core.lua API
