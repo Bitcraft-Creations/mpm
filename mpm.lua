@@ -27,7 +27,8 @@ local commandMapping = {
     list = Core.list,
     run = Core.run,
     self_update = Core.self_update,
-    update = Core.update
+    update = Core.update,
+    startup = Core.startup
 }
 
 local function printUsage()
@@ -39,6 +40,7 @@ local function printUsage()
     print("mpm run <package>")
     print("mpm self_update")
     print("mpm update <package>")
+    print("mpm startup")
 end
 
 -- Handle command
