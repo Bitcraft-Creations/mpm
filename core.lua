@@ -51,8 +51,8 @@ function Core.startup()
     local parameters = read()
 
     -- Construct the startup script content
-    local startup_content = "shell.run('mpm update')\\n"
-    startup_content = startup_content .. 'shell.run("mpm/packages/' .. package .. '.lua ' .. parameters .. '")\\n'
+    local startup_content = "shell.run('mpm update')\n"
+    startup_content = startup_content .. 'shell.run("mpm/packages/' .. package .. '.lua ' .. parameters .. '")'
 
     -- Write the startup script content to startup.lua
     local file = fs.open("/startup.lua", "w")
