@@ -63,28 +63,30 @@ function Core.startup()
 end
 
 -- Function to install a package
-function Core.install(package)
-    -- Iterate over all repositories
-    for _, repo in ipairs(Core.repositories) do
-        local newPackagePath = "/mpm/packages/" .. package:gsub("/", "-") .. ".lua"
-        local oldPackageContent = nil
-        if fs.exists(newPackagePath) then
-            local oldPackageFile = fs.open(newPackagePath, "r")
-            oldPackageContent = oldPackageFile.readAll()
-            oldPackageFile.close()
-        end
-        -- Try to download the new package
-        local newPackageContent = Core.downloadFile(repo .. package .. ".lua", newPackagePath)
-        if newPackageContent then
-            if oldPackageContent ~= newPackageContent then
-                Printer.print("\nPackage " .. package .. " installed successfully from " .. repo .. " with changes.")
-            else
-                Printer.print("\nPackage " .. package .. " reinstalled from " .. repo .. " without changes.")
+function Core.install(...)
+    local packages = {...}
+    for _, package in ipairs(packages) do
+        for _, repo in ipairs(Core.repositories) do
+            local newPackagePath = "/mpm/packages/" .. package:gsub("/", "-") .. ".lua"
+            local oldPackageContent = nil
+            if fs.exists(newPackagePath) then
+                local oldPackageFile = fs.open(newPackagePath, "r")
+                oldPackageContent = oldPackageFile.readAll()
+                oldPackageFile.close()
             end
-            return
+            -- Try to download the new package
+            local newPackageContent = Core.downloadFile(repo .. package .. ".lua", newPackagePath)
+            if newPackageContent then
+                if oldPackageContent ~= newPackageContent then
+                    Printer.print("\nPackage " .. package .. " installed successfully from " .. repo .. " with changes.")
+                else
+                    Printer.print("\nPackage " .. package .. " reinstalled from " .. repo .. " without changes.")
+                end
+                return
+            end
         end
+        Printer.print("\nPackage " .. package .. " not found.")
     end
-    Printer.print("\nPackage not found.")
 end
 
 -- Function to update a package
