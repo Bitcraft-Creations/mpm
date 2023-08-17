@@ -135,6 +135,10 @@ function Core.self_update()
             updates[file] = true
             -- If the file is mpm.lua then copy it to the root directory
             if file == "mpm.lua" then
+                -- If the file already exists; delete it
+                if fs.exists("/mpm.lua") then
+                    fs.delete("/mpm.lua")
+                end
                 fs.copy("/mpm/mpm.lua", "/" .. file)
             end
         end
