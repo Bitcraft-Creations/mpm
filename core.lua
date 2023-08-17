@@ -122,14 +122,14 @@ function Core.self_update()
         local url = repository_url .. file
         local oldContent = nil
         if fs.exists("/mpm/" .. file) then
-            local oldFile = fs.open("/mpm/" .. file, "r")
-            oldContent = oldFile.readAll()
-            oldFile.close()
+            -- Delete the old file before writing the new one
+            fs.delete("/mpm/" .. file)
+            new_files[#new_files + 1] = file
         else
             new_files[#new_files + 1] = file
         end
         local newContent = Core.downloadFile(url, "/mpm/" .. file)
-        if newContent and oldContent ~= newContent then
+        if newContent then
             updates[file] = true
             -- If the file is mpm.lua then copy it to the root directory
             if file == "mpm.lua" then
@@ -174,7 +174,7 @@ function Core.updateSinglePackage(package, Printer)
             if oldPackageContent ~= newPackageContent then
                 Printer.print("\nPackage " .. package .. " updated successfully from " .. repo .. " with changes.")
             else
-                Printer.printWarning("\nPackage " .. package .. " is already up to date. No changes detected.")
+                Printer.print("\nPackage " .. package .. " is already up to date. No changes detected.")
             end
             return
         end
@@ -203,6 +203,18 @@ if fs.exists("/mpm/repos.txt") then
         table.insert(Core.repositories, line)
     end
     file.close()
+end
+
+-- string.split implementation
+function string.split(inputstr, sep)
+    if sep == nil then
+        sep = "%s"
+    end
+    local t = {}
+    for str in string.gmatch(inputstr, "([^" .. sep .. "]+)") do
+        table.insert(t, str)
+    end
+    return t
 end
 
 -- Return the Core table

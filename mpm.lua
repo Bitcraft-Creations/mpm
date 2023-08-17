@@ -43,10 +43,13 @@ local function printUsage()
     print("mpm startup")
 end
 
--- Handle command
 if commandMapping[command] then
-    if select('#', ...) >= 2 then
-        commandMapping[command](select(2, ...))
+    if command == "install" then
+        if select('#', ...) >= 2 then
+            commandMapping[command](string.split(select(2, ...), ","))
+        else
+            print("Wrong input: mpm install <package> <optional:package_2> etc.")
+        end
     else
         commandMapping[command]()
     end
