@@ -45,8 +45,8 @@ end
 
 if commandMapping[command] then
     if command == "install" then
-        if select('#', ...) >= 2 then
-            commandMapping[command](string.split(select(2, ...), ","))
+        if #tArgs >= 2 then
+            commandMapping[command](table.unpack(tArgs, 2))
         else
             print("Wrong input: mpm install <package> <optional:package_2> etc.")
         end
@@ -56,4 +56,3 @@ if commandMapping[command] then
 else
     printUsage()
 end
-

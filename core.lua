@@ -67,7 +67,8 @@ function Core.install(...)
     local packages = {...}
     for _, package in ipairs(packages) do
         for _, repo in ipairs(Core.repositories) do
-            local newPackagePath = "/mpm/packages/" .. package:gsub("/", "-") .. ".lua"
+            local packageName = package
+            local newPackagePath = "/mpm/packages/" .. packageName:gsub("/", "-") .. ".lua"
             local oldPackageContent = nil
             if fs.exists(newPackagePath) then
                 local oldPackageFile = fs.open(newPackagePath, "r")
@@ -75,17 +76,16 @@ function Core.install(...)
                 oldPackageFile.close()
             end
             -- Try to download the new package
-            local newPackageContent = Core.downloadFile(repo .. package .. ".lua", newPackagePath)
+            local newPackageContent = Core.downloadFile(repo .. packageName .. ".lua", newPackagePath)
             if newPackageContent then
                 if oldPackageContent ~= newPackageContent then
-                    Printer.print("\nPackage " .. package .. " installed successfully from " .. repo .. " with changes.")
+                    Printer.print("\nPackage " .. packageName .. " installed successfully from " .. repo ..
+                                      " with changes.")
                 else
-                    Printer.print("\nPackage " .. package .. " reinstalled from " .. repo .. " without changes.")
+                    Printer.print("\nPackage " .. packageName .. " reinstalled from " .. repo .. " without changes.")
                 end
-                return
             end
         end
-        Printer.print("\nPackage " .. package .. " not found.")
     end
 end
 
