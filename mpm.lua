@@ -51,7 +51,11 @@ if commandMapping[command] then
             print("Wrong input: mpm install <package> <optional:package_2> etc.")
         end
     else
-        commandMapping[command]()
+        if #tArgs >= 2 then
+            commandMapping[command](table.unpack(tArgs, 2))
+        else
+            commandMapping[command]()
+        end
     end
 else
     printUsage()
