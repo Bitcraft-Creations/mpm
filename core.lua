@@ -32,36 +32,42 @@ function isComponentInstalled(name)
     -- If it's a package_name (it has a / in it)
     if string.find(name, "/") then
         -- Check if the package is installed
-        return fs.exists("/mpm/packages/" .. name:gsub("/", "-") .. ".lua")
+        return fs.exists("/mpm/packages/" .. name .. ".lua")
     else
         -- Check if the module is installed
-        return fs.exists("/mpm/modules/" .. name .. "/filelist.lua")
+        return fs.exists("/mpm/packages/" .. name .. "/filelist.lua")
     end
 end
 
-function getDependencies(package_name)
+function getDependencies(module_name)
     local dependencies = {}
 
     -- Construct the path to the dependencies.txt file
-    local depsPath = fs.combine(fs.getDir(package_name), "dependencies.txt")
-
-    -- Check if the dependencies.txt file exists
-    if fs.exists(depsPath) then
-        -- Read the dependencies from the file
-        local file = fs.open(depsPath, "r")
-        for line in file.readLine do
-            table.insert(dependencies, line)
+    local depsPath = fs.combine(module_name, "dependencies.txt")
+    -- Check if the dependencies.txt file exists, if not download it
+    if not fs.exists(depsPath) then
+        local depsUrl = Core.package_repository .. "/" .. depsPath
+        if downloadFile(depsUrl, depsPath) then
+            print("Found dependencies for: " .. module_name)
+        else
+            return
         end
-        file.close()
     end
+    -- Read the dependencies from the file
+    local file = fs.open(depsPath, "r")
+    for line in file.readLine do
+        table.insert(dependencies, line)
+    end
+    file.close()
 
     return dependencies
 end
 
 function installPackage(package_name)
     local package_url = Core.package_repository .. "/" .. package_name .. ".lua"
-    local package_path = "/mpm/packages/" .. package_name:gsub("/", "-") .. ".lua"
     local module_name = fs.getDir(package_name)
+    local package_path = "/mpm/packages/" .. package_name .. ".lua"
+    local moduleIsInstalled = isComponentInstalled(module_name)
 
     -- Check if package is already installed
     if isComponentInstalled(package_name) then
@@ -71,17 +77,23 @@ function installPackage(package_name)
 
     -- Download and install the package
     if downloadFile(package_url, package_path) then
+        -- Check for dependencies and install them
+        if not moduleIsInstalled then
+            local dependencies = getDependencies(module_name)
+            if dependencies then
+                for _, dependency in ipairs(dependencies) do
+                    if string.find(dependency, "/") then
+                        installPackage(dependency)
+                    else
+                        installModule(dependency)
+                    end
+                end
+            end
+        end
         print("Successfully installed: " .. package_name)
     else
         print("Failed to install: " .. package_name)
         return
-    end
-
-    -- Check for dependencies and install them
-    print("Checking for dependencies...")
-    local dependencies = getDependencies(module_name)
-    for _, dependency in ipairs(dependencies) do
-        installPackage(dependency)
     end
 end
 
@@ -89,19 +101,19 @@ function installModule(module_name)
     -- Construct the path to the module's file list (similar to filelist.lua)
     local module_filelist_path = module_name .. "/filelist.lua"
 
-    -- Check if the module's filelist exists
-    if not fs.exists(module_filelist_path) then
-        print("Module file list not found for: " .. module_name)
+    if not downloadFile(Core.package_repository .. "/" .. module_filelist_path, "/mpm/packages/" .. module_filelist_path) then
+        print("Failed to obtain file list for: " .. module_name)
         return
     end
 
     -- Load the module's filelist
-    local module_filelist = dofile(module_filelist_path)
+    local module_filelist = dofile("/mpm/packages/" .. module_filelist_path)
 
     -- Install each package within the module
     for _, package_name in ipairs(module_filelist) do
         installPackage(fs.combine(module_name, package_name))
     end
+    print("Successfully installed " .. module_name)
 end
 
 function Core.updateSinglePackage(package_name)
@@ -111,7 +123,7 @@ function Core.updateSinglePackage(package_name)
     -- Download the package content
     local response = http.get(package_url)
     if not response then
-        print("Failed to fetch: " .. package_name)
+        print("Failed to fetch package: " .. package_name)
         return
     end
     local newContent = response.readAll()
@@ -147,9 +159,11 @@ function Core.install(...)
 
     -- Install each specified package or module
     for _, name in ipairs(names) do
-        if string.find(package_name, "/") then
+        if string.find(name, "/") then
+            print("Installing package: " .. name)
             installPackage(name)
         else
+            print("Installing module: " .. name)
             installModule(name)
         end
     end
