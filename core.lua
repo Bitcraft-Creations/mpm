@@ -4,7 +4,7 @@ local Core = {} -- Create a table to hold the package manager functionalities.
 local Printer = dofile("/mpm/printer.lua")
 
 -- A table to store repository URLs
-Core.repositories = {}
+Core.package_repository = "https://shelfwood-mpm-packages.netlify.app/"
 
 -- Function to download a file from a URL
 function downloadFile(url, path)
@@ -59,7 +59,7 @@ function installPackage(package_name)
     end
 
     -- Construct the URL to download the package
-    local package_url = mpm_repository_url .. "/" .. package_name
+    local package_url = Core.package_repository .. "/" .. package_name
 
     -- Download and install the package
     if downloadFile(package_url, package_name) then
@@ -97,7 +97,7 @@ end
 
 function Core.updateSinglePackage(package_name)
     -- Construct the URL to download the package
-    local package_url = mpm_repository_url .. "/" .. package_name
+    local package_url = Core.package_repository .. "/" .. package_name
 
     -- Download the package content
     local response = http.get(package_url)
@@ -136,17 +136,6 @@ function Core.update(...)
             Core.updateSinglePackage(package_name)
         end
     end
-end
-
--- Function to add a new repository
-function Core.tap_repository(repo)
-    table.insert(Core.repositories, repo)
-    local file = fs.open("/mpm/repos.txt", "w")
-    for _, repo in ipairs(Core.repositories) do
-        file.writeLine(repo)
-    end
-    file.close()
-    Printer.print("\nRepository " .. repo .. " added successfully.")
 end
 
 -- Function to list installed packages
@@ -262,19 +251,6 @@ end
 
 function Core.run(package, ...)
     shell.run("/mpm/packages/" .. package .. ".lua", ...)
-end
-
--- Load the list of repositories from a file
-if fs.exists("/mpm/repos.txt") then
-    local file = fs.open("/mpm/repos.txt", "r")
-    while true do
-        local line = file.readLine()
-        if line == nil then
-            break
-        end
-        table.insert(Core.repositories, line)
-    end
-    file.close()
 end
 
 -- string.split implementation

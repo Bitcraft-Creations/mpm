@@ -42,16 +42,4 @@ end
 -- Load the core.lua API
 local Core = dofile("/mpm/core.lua")
 
--- Ask if the user wants to add the default package repository
-print("Would you like to add the default package repository? (https://github.com/j-shelfwood/mpm-packages)")
-print("(yes/no)")
-
-local answer = read()
-
-if answer == "yes" then
-    Core.tap_repository("https://shelfwood-mpm-packages.netlify.app/")
-end
-
 print("MPM has been successfully installed.")
-fs.delete("/mpm/filelist.lua") -- remove the filelist script
-fs.delete("install.lua") -- remove the install script
