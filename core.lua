@@ -7,16 +7,134 @@ local Printer = dofile("/mpm/printer.lua")
 Core.repositories = {}
 
 -- Function to download a file from a URL
-function Core.downloadFile(url, path)
+function downloadFile(url, path)
+    -- Attempt to open a connection to the given URL
     local response = http.get(url)
-    if response and response.getResponseCode() == 200 then
+
+    -- If the connection is successful
+    if response then
+        -- Read the content from the response
         local content = response.readAll()
+        response.close()
+
+        -- Save the content to the specified path
         local file = fs.open(path, "w")
         file.write(content)
         file.close()
-        return content
+
+        return true -- Indicate a successful download
     else
-        return nil
+        return false -- Indicate a failed download
+    end
+end
+
+function isPackageInstalled(package_name)
+    -- Check if the package file exists
+    return fs.exists(package_name)
+end
+
+function getDependencies(package_name)
+    local dependencies = {}
+
+    -- Construct the path to the dependencies.txt file
+    local depsPath = fs.combine(fs.getDir(package_name), "dependencies.txt")
+
+    -- Check if the dependencies.txt file exists
+    if fs.exists(depsPath) then
+        -- Read the dependencies from the file
+        local file = fs.open(depsPath, "r")
+        for line in file.readLine do
+            table.insert(dependencies, line)
+        end
+        file.close()
+    end
+
+    return dependencies
+end
+
+function installPackage(package_name)
+    -- If the package is already installed, exit the function
+    if isPackageInstalled(package_name) then
+        return
+    end
+
+    -- Construct the URL to download the package
+    local package_url = mpm_repository_url .. "/" .. package_name
+
+    -- Download and install the package
+    if downloadFile(package_url, package_name) then
+        print("Successfully installed: " .. package_name)
+    else
+        print("Failed to install: " .. package_name)
+        return
+    end
+
+    -- Check for dependencies and install them
+    local dependencies = getDependencies(package_name)
+    for _, dependency in ipairs(dependencies) do
+        installPackage(dependency)
+    end
+end
+
+function installModule(module_name)
+    -- Construct the path to the module's file list (similar to filelist.lua)
+    local module_filelist_path = module_name .. "/filelist.lua"
+
+    -- Check if the module's filelist exists
+    if not fs.exists(module_filelist_path) then
+        print("Module file list not found for: " .. module_name)
+        return
+    end
+
+    -- Load the module's filelist
+    local module_filelist = dofile(module_filelist_path)
+
+    -- Install each package within the module
+    for _, package_name in ipairs(module_filelist) do
+        installPackage(fs.combine(module_name, package_name))
+    end
+end
+
+function Core.updateSinglePackage(package_name)
+    -- Construct the URL to download the package
+    local package_url = mpm_repository_url .. "/" .. package_name
+
+    -- Download the package content
+    local response = http.get(package_url)
+    if not response then
+        print("Failed to fetch: " .. package_name)
+        return
+    end
+    local newContent = response.readAll()
+    response.close()
+
+    -- Compare the downloaded content with the existing content
+    local file = fs.open(package_name, "r")
+    local oldContent = file.readAll()
+    file.close()
+
+    if oldContent == newContent then
+        print(package_name .. " is already up-to-date.")
+    else
+        -- Re-install the package if content has changed
+        installPackage(package_name)
+    end
+end
+
+function Core.update(...)
+    local package_names = {...} -- Capture the package names passed as arguments
+
+    -- If no package names are provided, update all installed packages
+    if #package_names == 0 then
+        local installed_packages = fs.list("/mpm/packages/")
+        for _, package_name in ipairs(installed_packages) do
+            Core.updateSinglePackage(package_name)
+        end
+    else
+        -- Update each specified package
+        for _, package_name in ipairs(package_names) do
+            Core.updateSinglePackage(package_name)
+        end
     end
 end
 
@@ -62,45 +180,18 @@ function Core.startup()
     print("Startup script set successfully!")
 end
 
--- Function to install a package
 function Core.install(...)
-    local packages = {...}
-    for _, package in ipairs(packages) do
-        for _, repo in ipairs(Core.repositories) do
-            local packageName = package
-            local newPackagePath = "/mpm/packages/" .. packageName:gsub("/", "-") .. ".lua"
-            local oldPackageContent = nil
-            if fs.exists(newPackagePath) then
-                local oldPackageFile = fs.open(newPackagePath, "r")
-                oldPackageContent = oldPackageFile.readAll()
-                oldPackageFile.close()
-            end
-            -- Try to download the new package
-            local newPackageContent = Core.downloadFile(repo .. packageName .. ".lua", newPackagePath)
-            if newPackageContent then
-                if oldPackageContent ~= newPackageContent then
-                    Printer.print("\nPackage " .. packageName .. " installed successfully from " .. repo ..
-                                      " with changes.")
-                else
-                    Printer.print("\nPackage " .. packageName .. " reinstalled from " .. repo .. " without changes.")
-                end
-            end
-        end
-    end
-end
+    local package_names = {...} -- Capture the package names passed as arguments
 
--- Function to update a package
-function Core.update(package)
-    if package then -- If package name is provided
-        Printer.printHeader("Updating package: " .. package)
-        Core.updateSinglePackage(package, Printer)
-    else -- If no package name is provided
-        Printer.printHeader("Updating all packages")
-        local files = fs.list("/mpm/packages/")
-        for _, package in ipairs(files) do
-            local packageName = string.gsub(package, "%.lua", "")
-            Core.updateSinglePackage(packageName, Printer)
-        end
+    -- Check if no package names are provided
+    if #package_names == 0 then
+        print("Please specify one or more packages to install.")
+        return
+    end
+
+    -- Install each specified package
+    for _, package_name in ipairs(package_names) do
+        installPackage(package_name)
     end
 end
 
@@ -161,31 +252,6 @@ function Core.self_update()
     end
 
     Printer.print("MPM updated successfully.")
-end
-
--- Helper function to update a single package
-function Core.updateSinglePackage(package, Printer)
-    -- Iterate over all repositories
-    for _, repo in ipairs(Core.repositories) do
-        local newPackagePath = "/mpm/packages/" .. package:gsub("/", "-") .. ".lua"
-        local oldPackageContent = nil
-        if fs.exists(newPackagePath) then
-            local oldPackageFile = fs.open(newPackagePath, "r")
-            oldPackageContent = oldPackageFile.readAll()
-            oldPackageFile.close()
-        end
-        -- Try to download the new package
-        local newPackageContent = Core.downloadFile(repo .. package .. ".lua", newPackagePath)
-        if newPackageContent then
-            if oldPackageContent ~= newPackageContent then
-                Printer.print("\nPackage " .. package .. " updated successfully from " .. repo .. " with changes.")
-            else
-                Printer.print("\nPackage " .. package .. " is already up to date. No changes detected.")
-            end
-            return
-        end
-    end
-    Printer.printWarning("\nPackage not found.")
 end
 
 -- Function to remove a package
