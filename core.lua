@@ -52,27 +52,33 @@ function getDependencies(package_name)
     return dependencies
 end
 
-function installPackage(package_name)
-    -- If the package is already installed, exit the function
-    if isPackageInstalled(package_name) then
-        return
-    end
+function installPackage(package_or_module_name)
+    -- Determine if the name refers to a package or module
+    if string.find(package_or_module_name, "/") then
+        -- It's a package
+        local package_url = Core.package_repository .. "/" .. package_or_module_name .. ".lua"
 
-    -- Construct the URL to download the package
-    local package_url = Core.package_repository .. "/" .. package_name
+        -- Check if package is already installed
+        if isPackageInstalled(package_or_module_name) then
+            return
+        end
 
-    -- Download and install the package
-    if downloadFile(package_url, package_name) then
-        print("Successfully installed: " .. package_name)
+        -- Download and install the package
+        if downloadFile(package_url, package_or_module_name) then
+            print("Successfully installed: " .. package_or_module_name)
+        else
+            print("Failed to install: " .. package_or_module_name)
+            return
+        end
+
+        -- Check for dependencies and install them
+        local dependencies = getDependencies(package_or_module_name)
+        for _, dependency in ipairs(dependencies) do
+            installPackage(dependency)
+        end
     else
-        print("Failed to install: " .. package_name)
-        return
-    end
-
-    -- Check for dependencies and install them
-    local dependencies = getDependencies(package_name)
-    for _, dependency in ipairs(dependencies) do
-        installPackage(dependency)
+        -- It's a module
+        installModule(package_or_module_name)
     end
 end
 
@@ -121,66 +127,18 @@ function Core.updateSinglePackage(package_name)
     end
 end
 
-function Core.update(...)
-    local package_names = {...} -- Capture the package names passed as arguments
-
-    -- If no package names are provided, update all installed packages
-    if #package_names == 0 then
-        local installed_packages = fs.list("/mpm/packages/")
-        for _, package_name in ipairs(installed_packages) do
-            Core.updateSinglePackage(package_name)
-        end
-    else
-        -- Update each specified package
-        for _, package_name in ipairs(package_names) do
-            Core.updateSinglePackage(package_name)
-        end
-    end
-end
-
--- Function to list installed packages
-function Core.list()
-    Printer.print("\nListing installed packages:")
-    local files = fs.list("/mpm/packages/")
-    for _, file in ipairs(files) do
-        Printer.print("  - " .. file)
-    end
-end
-
--- Function to set a package as the startup script
-function Core.startup()
-    -- Prompt user for package name
-    print("Enter the name of the package you wish to set as the startup script:")
-    local package = read()
-
-    -- Prompt user for optional parameters
-    print("Enter any optional parameters to pass to the package (leave blank for none):")
-    local parameters = read()
-
-    -- Construct the startup script content
-    local startup_content = "shell.run('mpm update')\n"
-    startup_content = startup_content .. 'shell.run("mpm/packages/' .. package .. '.lua ' .. parameters .. '")'
-
-    -- Write the startup script content to startup.lua
-    local file = fs.open("/startup.lua", "w")
-    file.write(startup_content)
-    file.close()
-
-    print("Startup script set successfully!")
-end
-
 function Core.install(...)
-    local package_names = {...} -- Capture the package names passed as arguments
+    local names = {...} -- Capture the names passed as arguments
 
-    -- Check if no package names are provided
-    if #package_names == 0 then
-        print("Please specify one or more packages to install.")
+    -- Check if no names are provided
+    if #names == 0 then
+        print("Please specify one or more packages or modules to install.")
         return
     end
 
-    -- Install each specified package
-    for _, package_name in ipairs(package_names) do
-        installPackage(package_name)
+    -- Install each specified package or module
+    for _, name in ipairs(names) do
+        installPackage(name) -- This function now handles both packages and modules
     end
 end
 
@@ -251,6 +209,54 @@ end
 
 function Core.run(package, ...)
     shell.run("/mpm/packages/" .. package .. ".lua", ...)
+end
+
+function Core.update(...)
+    local package_names = {...} -- Capture the package names passed as arguments
+
+    -- If no package names are provided, update all installed packages
+    if #package_names == 0 then
+        local installed_packages = fs.list("/mpm/packages/")
+        for _, package_name in ipairs(installed_packages) do
+            Core.updateSinglePackage(package_name)
+        end
+    else
+        -- Update each specified package
+        for _, package_name in ipairs(package_names) do
+            Core.updateSinglePackage(package_name)
+        end
+    end
+end
+
+-- Function to list installed packages
+function Core.list()
+    Printer.print("\nListing installed packages:")
+    local files = fs.list("/mpm/packages/")
+    for _, file in ipairs(files) do
+        Printer.print("  - " .. file)
+    end
+end
+
+-- Function to set a package as the startup script
+function Core.startup()
+    -- Prompt user for package name
+    print("Enter the name of the package you wish to set as the startup script:")
+    local package = read()
+
+    -- Prompt user for optional parameters
+    print("Enter any optional parameters to pass to the package (leave blank for none):")
+    local parameters = read()
+
+    -- Construct the startup script content
+    local startup_content = "shell.run('mpm update')\n"
+    startup_content = startup_content .. 'shell.run("mpm/packages/' .. package .. '.lua ' .. parameters .. '")'
+
+    -- Write the startup script content to startup.lua
+    local file = fs.open("/startup.lua", "w")
+    file.write(startup_content)
+    file.close()
+
+    print("Startup script set successfully!")
 end
 
 -- string.split implementation
