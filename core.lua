@@ -28,9 +28,15 @@ function downloadFile(url, path)
     end
 end
 
-function isPackageInstalled(package_name)
-    -- Check if the package file exists
-    return fs.exists(package_name)
+function isComponentInstalled(name)
+    -- If it's a package_name (it has a / in it)
+    if string.find(name, "/") then
+        -- Check if the package is installed
+        return fs.exists("/mpm/packages/" .. name:gsub("/", "-") .. ".lua")
+    else
+        -- Check if the module is installed
+        return fs.exists("/mpm/modules/" .. name .. "/filelist.lua")
+    end
 end
 
 function getDependencies(package_name)
@@ -52,33 +58,30 @@ function getDependencies(package_name)
     return dependencies
 end
 
-function installPackage(package_or_module_name)
-    -- Determine if the name refers to a package or module
-    if string.find(package_or_module_name, "/") then
-        -- It's a package
-        local package_url = Core.package_repository .. "/" .. package_or_module_name .. ".lua"
+function installPackage(package_name)
+    local package_url = Core.package_repository .. "/" .. package_name .. ".lua"
+    local package_path = "/mpm/packages/" .. package_name:gsub("/", "-") .. ".lua"
+    local module_name = fs.getDir(package_name)
 
-        -- Check if package is already installed
-        if isPackageInstalled(package_or_module_name) then
-            return
-        end
+    -- Check if package is already installed
+    if isComponentInstalled(package_name) then
+        print("Package already installed: " .. package_name)
+        return
+    end
 
-        -- Download and install the package
-        if downloadFile(package_url, package_or_module_name) then
-            print("Successfully installed: " .. package_or_module_name)
-        else
-            print("Failed to install: " .. package_or_module_name)
-            return
-        end
-
-        -- Check for dependencies and install them
-        local dependencies = getDependencies(package_or_module_name)
-        for _, dependency in ipairs(dependencies) do
-            installPackage(dependency)
-        end
+    -- Download and install the package
+    if downloadFile(package_url, package_path) then
+        print("Successfully installed: " .. package_name)
     else
-        -- It's a module
-        installModule(package_or_module_name)
+        print("Failed to install: " .. package_name)
+        return
+    end
+
+    -- Check for dependencies and install them
+    print("Checking for dependencies...")
+    local dependencies = getDependencies(module_name)
+    for _, dependency in ipairs(dependencies) do
+        installPackage(dependency)
     end
 end
 
@@ -103,7 +106,7 @@ end
 
 function Core.updateSinglePackage(package_name)
     -- Construct the URL to download the package
-    local package_url = Core.package_repository .. "/" .. package_name
+    local package_url = Core.package_repository .. "/" .. package_name .. ".lua"
 
     -- Download the package content
     local response = http.get(package_url)
@@ -122,8 +125,14 @@ function Core.updateSinglePackage(package_name)
     if oldContent == newContent then
         print(package_name .. " is already up-to-date.")
     else
-        -- Re-install the package if content has changed
-        installPackage(package_name)
+        -- Delete the old file before writing the new one
+        fs.delete(package_name)
+        -- Write the new content to the file
+        file = fs.open(package_name, "w")
+        file.write(newContent)
+        file.close()
+
+        print(package_name .. " has been updated successfully.")
     end
 end
 
@@ -138,7 +147,11 @@ function Core.install(...)
 
     -- Install each specified package or module
     for _, name in ipairs(names) do
-        installPackage(name) -- This function now handles both packages and modules
+        if string.find(package_name, "/") then
+            installPackage(name)
+        else
+            installModule(name)
+        end
     end
 end
 
