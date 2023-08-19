@@ -43,18 +43,19 @@ function getDependencies(module_name)
     local dependencies = {}
 
     -- Construct the path to the dependencies.txt file
-    local depsPath = fs.combine(module_name, "dependencies.txt")
+    local depsPath = module_name .. "/dependencies.txt"
+
     -- Check if the dependencies.txt file exists, if not download it
-    if not fs.exists(depsPath) then
+    if not fs.exists("/mpm/packages/" .. depsPath) then
         local depsUrl = Core.package_repository .. "/" .. depsPath
-        if downloadFile(depsUrl, depsPath) then
+        if downloadFile(depsUrl, "/mpm/packages/" .. depsPath) then
             print("Found dependencies for: " .. module_name)
         else
             return
         end
     end
     -- Read the dependencies from the file
-    local file = fs.open(depsPath, "r")
+    local file = fs.open("/mpm/packages/" .. depsPath, "r")
     for line in file.readLine do
         table.insert(dependencies, line)
     end
@@ -114,38 +115,6 @@ function installModule(module_name)
         installPackage(fs.combine(module_name, package_name))
     end
     print("Successfully installed " .. module_name)
-end
-
-function Core.updateSinglePackage(package_name)
-    -- Construct the URL to download the package
-    local package_url = Core.package_repository .. "/" .. package_name .. ".lua"
-
-    -- Download the package content
-    local response = http.get(package_url)
-    if not response then
-        print("Failed to fetch package: " .. package_name)
-        return
-    end
-    local newContent = response.readAll()
-    response.close()
-
-    -- Compare the downloaded content with the existing content
-    local file = fs.open(package_name, "r")
-    local oldContent = file.readAll()
-    file.close()
-
-    if oldContent == newContent then
-        print(package_name .. " is already up-to-date.")
-    else
-        -- Delete the old file before writing the new one
-        fs.delete(package_name)
-        -- Write the new content to the file
-        file = fs.open(package_name, "w")
-        file.write(newContent)
-        file.close()
-
-        print(package_name .. " has been updated successfully.")
-    end
 end
 
 function Core.install(...)
@@ -238,19 +207,86 @@ function Core.run(package, ...)
     shell.run("/mpm/packages/" .. package .. ".lua", ...)
 end
 
-function Core.update(...)
-    local package_names = {...} -- Capture the package names passed as arguments
+function Core.updateSingleComponent(name)
+    -- Check if it's a package or a module
+    if string.find(name, "/") then
+        -- It's a package
+        local package_url = Core.package_repository .. "/" .. name .. ".lua"
 
-    -- If no package names are provided, update all installed packages
-    if #package_names == 0 then
-        local installed_packages = fs.list("/mpm/packages/")
-        for _, package_name in ipairs(installed_packages) do
-            Core.updateSinglePackage(package_name)
+        -- Download the package content
+        local response = http.get(package_url)
+        if not response then
+            print("Failed to fetch package: " .. name)
+            return
+        end
+        local newContent = response.readAll()
+        response.close()
+
+        -- Compare the downloaded content with the existing content
+        local oldContent = nil
+        if fs.exists("/mpm/packages/" .. name .. ".lua") then
+            local file = fs.open("/mpm/packages/" .. name .. ".lua", "r")
+            oldContent = file.readAll()
+            file.close()
+        end
+
+        if oldContent == newContent then
+            print(name .. " is already up-to-date.")
+        else
+            -- Delete the old file before writing the new one
+            if fs.exists("/mpm/packages/" .. name .. ".lua") then
+                fs.delete("/mpm/packages/" .. name .. ".lua")
+            end
+            -- Write the new content to the file
+            local file = fs.open("/mpm/packages/" .. name .. ".lua", "w")
+            file.write(newContent)
+            file.close()
+
+            print(name .. " has been updated successfully.")
         end
     else
-        -- Update each specified package
-        for _, package_name in ipairs(package_names) do
-            Core.updateSinglePackage(package_name)
+        -- It's a module, update its file list first
+        if not downloadFile(Core.package_repository .. "/" .. name .. "/filelist.lua",
+            "/mpm/packages/" .. name .. "/filelist.lua") then
+            print("Failed to update file list for: " .. name)
+            return
+        end
+        -- Load the module's file list and update each package in it
+        local module_filelist = dofile("/mpm/packages/" .. name .. "/filelist.lua")
+        for _, package_name in ipairs(module_filelist) do
+            Core.updateSingleComponent(fs.combine(name, package_name))
+        end
+    end
+end
+
+-- Helper function to update all packages in a given module directory
+local function updatePackagesInModule(module_dir)
+    local package_files = fs.list(module_dir)
+    for _, package_file in ipairs(package_files) do
+        if package_file:match("%.lua$") then -- Check if it's a Lua file
+            local package_name = fs.combine(fs.getName(module_dir), package_file:match("(.+)%..+$")) -- Construct the package name
+            Core.updateSingleComponent(package_name)
+        end
+    end
+end
+
+function Core.update(...)
+    local names = {...} -- Capture the names passed as arguments
+
+    -- If no names are provided, update only the installed packages
+    if #names == 0 then
+        local module_dirs = fs.list("/mpm/packages/")
+        for _, module_dir in ipairs(module_dirs) do
+            updatePackagesInModule("/mpm/packages/" .. module_dir)
+        end
+    else
+        -- Update each specified package or module
+        for _, name in ipairs(names) do
+            if string.find(name, "/") then -- It's a package
+                Core.updateSingleComponent(name)
+            else -- It's a module
+                updatePackagesInModule("/mpm/packages/" .. name)
+            end
         end
     end
 end
