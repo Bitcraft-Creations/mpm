@@ -34,7 +34,7 @@ local commandMapping = {
     remove = Core.remove,
     list = Core.list,
     run = Core.run,
-    self-update = Core.self-update,
+    self_update = Core.self_update,
     update = Core.update,
     startup = Core.startup
 }
