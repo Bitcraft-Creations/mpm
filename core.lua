@@ -160,48 +160,48 @@ function Core.self_update()
 
     -- Check for updates
     local updates = {}
-    local new_files = {}
     for _, file in ipairs(files) do
         local url = repository_url .. file
-        local oldContent = nil
-        if fs.exists("/mpm/" .. file) then
-            -- Delete the old file before writing the new one
-            fs.delete("/mpm/" .. file)
-            new_files[#new_files + 1] = file
-        else
-            new_files[#new_files + 1] = file
-        end
-        local newContent = Core.downloadFile(url, "/mpm/" .. file)
+        local newContent = Core.downloadFile(url, "/mpm/temp_" .. file)
         if newContent then
-            updates[file] = true
-            -- If the file is mpm.lua then copy it to the root directory
-            if file == "mpm.lua" then
-                -- If the file already exists; delete it
-                if fs.exists("/mpm.lua") then
-                    fs.delete("/mpm.lua")
+            local oldContent = nil
+            if fs.exists("/mpm/" .. file) then
+                local oldFile = fs.open("/mpm/" .. file, "r")
+                oldContent = oldFile.readAll()
+                oldFile.close()
+            end
+
+            local tempFile = fs.open("/mpm/temp_" .. file, "r")
+            local newContent = tempFile.readAll()
+            tempFile.close()
+
+            if oldContent ~= newContent then
+                updates[#updates + 1] = file
+                fs.delete("/mpm/" .. file)
+                fs.move("/mpm/temp_" .. file, "/mpm/" .. file)
+                -- If the file is mpm.lua then copy it to the root directory
+                if file == "mpm.lua" then
+                    if fs.exists("/mpm.lua") then
+                        fs.delete("/mpm.lua")
+                    end
+                    fs.copy("/mpm/mpm.lua", "/mpm.lua")
                 end
-                fs.copy("/mpm/mpm.lua", "/" .. file)
+            else
+                fs.delete("/mpm/temp_" .. file)
             end
         end
     end
 
     -- Show output to the user
-    if next(updates) then
-        for file, _ in pairs(updates) do
-            Printer.print("File " .. file .. " has been updated successfully.")
+    if #updates > 0 then
+        Printer.print("Changes detected for:")
+        for _, file in ipairs(updates) do
+            Printer.print("- " .. file)
         end
+        Printer.print("MPM updated successfully.")
     else
         Printer.print("No updates found.")
     end
-
-    if #new_files > 0 then
-        Printer.print("The following new files have been downloaded:")
-        for _, file in ipairs(new_files) do
-            Printer.print("- " .. file)
-        end
-    end
-
-    Printer.print("MPM updated successfully.")
 end
 
 -- Function to remove a package
