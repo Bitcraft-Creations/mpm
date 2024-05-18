@@ -7,7 +7,7 @@ local Printer = dofile("/mpm/printer.lua")
 Core.package_repository = "https://shelfwood-mpm-packages.netlify.app/"
 
 -- Function to download a file from a URL
-function downloadFile(url, path)
+function Core.downloadFile(url, path)
     -- Attempt to open a connection to the given URL
     local response = http.get(url)
 
@@ -48,7 +48,7 @@ function getDependencies(module_name)
     -- Check if the dependencies.txt file exists, if not download it
     if not fs.exists("/mpm/packages/" .. depsPath) then
         local depsUrl = Core.package_repository .. "/" .. depsPath
-        if downloadFile(depsUrl, "/mpm/packages/" .. depsPath) then
+        if Core.downloadFile(depsUrl, "/mpm/packages/" .. depsPath) then
             print("Found dependencies for: " .. module_name)
         else
             return
@@ -77,7 +77,7 @@ function installPackage(package_name)
     end
 
     -- Download and install the package
-    if downloadFile(package_url, package_path) then
+    if Core.downloadFile(package_url, package_path) then
         -- Check for dependencies and install them
         if not moduleIsInstalled then
             local dependencies = getDependencies(module_name)
@@ -102,7 +102,7 @@ function installModule(module_name)
     -- Construct the path to the module's file list (similar to filelist.lua)
     local module_filelist_path = module_name .. "/filelist.lua"
 
-    if not downloadFile(Core.package_repository .. "/" .. module_filelist_path, "/mpm/packages/" .. module_filelist_path) then
+    if not Core.downloadFile(Core.package_repository .. "/" .. module_filelist_path, "/mpm/packages/" .. module_filelist_path) then
         print("Failed to obtain file list for: " .. module_name)
         return
     end
@@ -146,9 +146,16 @@ function Core.self_update()
     local repository_url = "https://shelfwood-mpm.netlify.app/"
 
     -- Download filelist.lua from the install repository
-    local filelist_content = Core.downloadFile(repository_url .. "filelist.lua", "/mpm/filelist.lua")
+    local success = Core.downloadFile(repository_url .. "filelist.lua", "/mpm/filelist.lua")
+    if not success then
+        Printer.print("Failed to download filelist.lua")
+        return
+    end
 
     -- Load the filelist
+    local file = fs.open("/mpm/filelist.lua", "r")
+    local filelist_content = file.readAll()
+    file.close()
     local files = load(filelist_content)()
 
     -- Check for updates
@@ -246,7 +253,7 @@ function Core.updateSingleComponent(name)
         end
     else
         -- It's a module, update its file list first
-        if not downloadFile(Core.package_repository .. "/" .. name .. "/filelist.lua",
+        if not Core.downloadFile(Core.package_repository .. "/" .. name .. "/filelist.lua",
             "/mpm/packages/" .. name .. "/filelist.lua") then
             print("Failed to update file list for: " .. name)
             return
