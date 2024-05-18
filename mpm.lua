@@ -1,16 +1,6 @@
 -- mpm.lua
--- Load the mpm API
-local env = {
-    shell = shell,
-    http = http,
-    fs = fs
-} -- Add any other APIs as needed
-setmetatable(env, {
-    __index = _G
-})
-
--- Custom require function
-local function customRequire(module)
+-- Custom mpm function
+local function mpm(module)
     local paths = {
         "/mpm/packages/" .. module .. ".lua",
         "/mpm/packages/" .. module .. "/init.lua"
@@ -25,17 +15,17 @@ local function customRequire(module)
     error("Module '" .. module .. "' not found in /mpm/packages")
 end
 
--- Override the global require function
-env.require = customRequire
+-- Create a custom environment with the mpm function
+local env = setmetatable({ mpm = mpm }, { __index = _G })
 
--- Load the core.lua module
+-- Load the core.lua module with the custom environment
 local Core = setfenv(loadfile("/mpm/core.lua"), env)()
 
--- get the command-line arguments
-local tArgs = {...}
+-- Get the command-line arguments
+local tArgs = { ... }
 
 -- mpm.lua (command-line interface)
--- the first argument is the command
+-- The first argument is the command
 local command = tArgs[1]
 
 -- Functionality mapping

@@ -211,7 +211,17 @@ function Core.remove(package)
 end
 
 function Core.run(package, ...)
-    shell.run("/mpm/packages/" .. package .. ".lua", ...)
+    local package_path = "/mpm/packages/" .. package .. ".lua"
+    if not fs.exists(package_path) then
+        error("Package '" .. package .. "' not found.")
+    end
+
+    -- Create a custom environment with the mpm function
+    local env = setmetatable({ mpm = mpm }, { __index = _G })
+
+    -- Load and run the package with the custom environment
+    local func = setfenv(loadfile(package_path), env)
+    func(...)
 end
 
 function Core.updateSingleComponent(name)
@@ -319,7 +329,7 @@ function Core.startup()
 
     -- Construct the startup script content
     local startup_content = "shell.run('mpm update')\n"
-    startup_content = startup_content .. 'shell.run("mpm/packages/' .. package .. '.lua ' .. parameters .. '")'
+    startup_content = startup_content .. 'shell.run(mpm run ' .. package .. '.lua ' .. parameters .. '")'
 
     -- Write the startup script content to startup.lua
     local file = fs.open("/startup.lua", "w")
