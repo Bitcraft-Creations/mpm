@@ -9,6 +9,25 @@ setmetatable(env, {
     __index = _G
 })
 
+-- Custom require function
+local function customRequire(module)
+    local paths = {
+        "/mpm/packages/" .. module .. ".lua",
+        "/mpm/packages/" .. module .. "/init.lua"
+    }
+
+    for _, path in ipairs(paths) do
+        if fs.exists(path) then
+            return dofile(path)
+        end
+    end
+
+    error("Module '" .. module .. "' not found in /mpm/packages")
+end
+
+-- Override the global require function
+env.require = customRequire
+
 -- Load the core.lua module
 local Core = setfenv(loadfile("/mpm/core.lua"), env)()
 
