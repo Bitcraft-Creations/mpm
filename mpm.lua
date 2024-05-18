@@ -32,10 +32,9 @@ local command = tArgs[1]
 local commandMapping = {
     install = Core.install,
     remove = Core.remove,
-    tap_repository = Core.tap_repository,
     list = Core.list,
     run = Core.run,
-    self_update = Core.self_update,
+    self-update = Core.self-update,
     update = Core.update,
     startup = Core.startup
 }
