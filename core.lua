@@ -22,7 +22,7 @@ function Core.downloadFile(url, path)
         file.write(content)
         file.close()
 
-        return true -- Indicate a successful download
+        return true  -- Indicate a successful download
     else
         return false -- Indicate a failed download
     end
@@ -118,7 +118,7 @@ function installModule(module_name)
 end
 
 function Core.install(...)
-    local names = {...} -- Capture the names passed as arguments
+    local names = { ... } -- Capture the names passed as arguments
 
     -- Check if no names are provided
     if #names == 0 then
@@ -220,7 +220,10 @@ function Core.run(package, ...)
     local env = setmetatable({ mpm = mpm }, { __index = _G })
 
     -- Load and run the package with the custom environment
-    local func = setfenv(loadfile(package_path), env)
+    local func, err = loadfile(package_path, "t", env)
+    if not func then
+        error("Error loading package '" .. package .. "': " .. err)
+    end
     func(...)
 end
 
@@ -264,7 +267,7 @@ function Core.updateSingleComponent(name)
     else
         -- It's a module, update its file list first
         if not Core.downloadFile(Core.package_repository .. "/" .. name .. "/filelist.lua",
-            "/mpm/packages/" .. name .. "/filelist.lua") then
+                "/mpm/packages/" .. name .. "/filelist.lua") then
             print("Failed to update file list for: " .. name)
             return
         end
@@ -280,7 +283,7 @@ end
 local function updatePackagesInModule(module_dir)
     local package_files = fs.list(module_dir)
     for _, package_file in ipairs(package_files) do
-        if package_file:match("%.lua$") then -- Check if it's a Lua file
+        if package_file:match("%.lua$") then                                                         -- Check if it's a Lua file
             local package_name = fs.combine(fs.getName(module_dir), package_file:match("(.+)%..+$")) -- Construct the package name
             Core.updateSingleComponent(package_name)
         end
@@ -288,7 +291,7 @@ local function updatePackagesInModule(module_dir)
 end
 
 function Core.update(...)
-    local names = {...} -- Capture the names passed as arguments
+    local names = { ... } -- Capture the names passed as arguments
 
     -- If no names are provided, update only the installed packages
     if #names == 0 then
@@ -301,7 +304,7 @@ function Core.update(...)
         for _, name in ipairs(names) do
             if string.find(name, "/") then -- It's a package
                 Core.updateSingleComponent(name)
-            else -- It's a module
+            else                           -- It's a module
                 updatePackagesInModule("/mpm/packages/" .. name)
             end
         end
