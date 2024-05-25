@@ -7,12 +7,10 @@ local Printer = dofile("/mpm/printer.lua")
 Core.package_repository = "https://shelfwood-mpm-packages.netlify.app/"
 
 function mpm(module)
-    local paths = {"/mpm/packages/" .. module .. ".lua", "/mpm/packages/" .. module .. "/init.lua"}
+    local path = "/mpm/packages/" .. module .. ".lua"
 
-    for _, path in ipairs(paths) do
-        if fs.exists(path) then
-            return dofile(path)
-        end
+    if fs.exists(path) then
+        return dofile(path)
     end
 
     error("Module '" .. module .. "' not found in /mpm/packages")
