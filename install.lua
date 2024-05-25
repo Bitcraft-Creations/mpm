@@ -35,7 +35,7 @@ local files = dofile("/mpm/filelist.lua")
 for _, file in ipairs(files) do
     downloadFile(mpm_repository_url .. file, "/mpm/" .. file)
     if file == "mpm.lua" then
-        fs.copy("/mpm/mpm.lua", "/" .. file)
+        fs.move("/mpm/mpm.lua", "/" .. file)
     end
 end
 

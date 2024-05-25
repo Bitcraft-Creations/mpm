@@ -1,26 +1,6 @@
 -- mpm.lua
--- Custom mpm function
-local function mpm(module)
-    local paths = {"/mpm/packages/" .. module .. ".lua", "/mpm/packages/" .. module .. "/init.lua"}
-
-    for _, path in ipairs(paths) do
-        if fs.exists(path) then
-            return dofile(path)
-        end
-    end
-
-    error("Module '" .. module .. "' not found in /mpm/packages")
-end
-
--- Create a custom environment with the mpm function
-local env = setmetatable({
-    mpm = mpm
-}, {
-    __index = _G
-})
-
 -- Load the core.lua module with the custom environment
-local Core = setfenv(loadfile("/mpm/core.lua"), env)
+local Core = dofile("/mpm/core.lua")
 
 -- Get the command-line arguments
 local tArgs = {...}

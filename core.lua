@@ -6,6 +6,18 @@ local Printer = dofile("/mpm/printer.lua")
 -- A table to store repository URLs
 Core.package_repository = "https://shelfwood-mpm-packages.netlify.app/"
 
+function mpm(module)
+    local paths = {"/mpm/packages/" .. module .. ".lua", "/mpm/packages/" .. module .. "/init.lua"}
+
+    for _, path in ipairs(paths) do
+        if fs.exists(path) then
+            return dofile(path)
+        end
+    end
+
+    error("Module '" .. module .. "' not found in /mpm/packages")
+end
+
 -- Function to download a file from a URL
 function Core.downloadFile(url, path)
     -- Attempt to open a connection to the given URL
@@ -217,19 +229,7 @@ function Core.run(package, ...)
         error("Package '" .. package .. "' not found.")
     end
 
-    -- Create a custom environment with the mpm function
-    local env = setmetatable({
-        mpm = mpm
-    }, {
-        __index = _G
-    })
-
-    -- Load and run the package with the custom environment
-    local func, err = loadfile(package_path, "t", env)
-    if not func then
-        error("Error loading package '" .. package .. "': " .. err)
-    end
-    func(...)
+    dofile(package_path)
 end
 
 function Core.updateSingleComponent(name)
