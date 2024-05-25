@@ -286,6 +286,17 @@ function Core.updateSingleComponent(name)
     return updated
 end
 
+-- Helper function to update all packages in a given module directory
+local function updatePackagesInModule(module_dir)
+    local package_files = fs.list(module_dir)
+    for _, package_file in ipairs(package_files) do
+        if package_file:match("%.lua$") then -- Check if it's a Lua file
+            local package_name = fs.combine(fs.getName(module_dir), package_file:match("(.+)%..+$")) -- Construct the package name
+            Core.updateSingleComponent(package_name)
+        end
+    end
+end
+
 function Core.update(...)
     local names = {...}
     local updatedComponents = {}
@@ -312,17 +323,6 @@ function Core.update(...)
         end
     else
         Printer.print("\nNo updates found.")
-    end
-end
-
--- Helper function to update all packages in a given module directory
-local function updatePackagesInModule(module_dir)
-    local package_files = fs.list(module_dir)
-    for _, package_file in ipairs(package_files) do
-        if package_file:match("%.lua$") then -- Check if it's a Lua file
-            local package_name = fs.combine(fs.getName(module_dir), package_file:match("(.+)%..+$")) -- Construct the package name
-            Core.updateSingleComponent(package_name)
-        end
     end
 end
 
