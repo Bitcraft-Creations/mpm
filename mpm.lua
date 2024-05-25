@@ -1,10 +1,7 @@
 -- mpm.lua
 -- Custom mpm function
 local function mpm(module)
-    local paths = {
-        "/mpm/packages/" .. module .. ".lua",
-        "/mpm/packages/" .. module .. "/init.lua"
-    }
+    local paths = {"/mpm/packages/" .. module .. ".lua", "/mpm/packages/" .. module .. "/init.lua"}
 
     for _, path in ipairs(paths) do
         if fs.exists(path) then
@@ -16,13 +13,17 @@ local function mpm(module)
 end
 
 -- Create a custom environment with the mpm function
-local env = setmetatable({ mpm = mpm }, { __index = _G })
+local env = setmetatable({
+    mpm = mpm
+}, {
+    __index = _G
+})
 
 -- Load the core.lua module with the custom environment
-local Core = setfenv(loadfile("/mpm/core.lua"), env)()
+local Core = setfenv(loadfile("/mpm/core.lua"), env)
 
 -- Get the command-line arguments
-local tArgs = { ... }
+local tArgs = {...}
 
 -- mpm.lua (command-line interface)
 -- The first argument is the command
