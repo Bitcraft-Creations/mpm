@@ -4,10 +4,10 @@ bootstrapModule = {
     printUsage = function()
         print("Usage:")
 
-        local files = fs.read("./commands")
+        local files = fs.read("/mpm/commands")
 
         for _, file in ipairs(files) do
-            local module = dofile("./commands/" .. file)
+            local module = dofile("/mpm/commands/" .. file)
             print(module.usage or "No usage specified.")
         end
     end,
@@ -20,7 +20,7 @@ bootstrapModule = {
             return
         end
 
-        local module = dofile("./commands/" .. command .. ".lua")
+        local module = dofile("/mpm/commands/" .. command .. ".lua")
 
         module.run(table.unpack(tArgs, 2))
     end
