@@ -10,6 +10,8 @@ function mpm(module)
     error("Module '" .. module .. "' not found in /mpm/packages")
 end
 
+_G.mpm = mpm
+
 local bootstrap = dofile("/mpm/bootstrap.lua")
 
 -- Get the command-line arguments
