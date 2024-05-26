@@ -7,6 +7,7 @@ updateModule = {
 
     run = function(...)
         local names = {...}
+        local updatedComponents = {}
 
         if #names == 0 then
             local module_dirs = fs.list("/mpm/packages/")
@@ -22,12 +23,12 @@ updateModule = {
                 end
             end
         end
-    
+
         if #updatedComponents <= 0 then
             print("\nNo updates found.")
             return
         end
-        
+
         print("\nUpdated components:")
         for _, component in ipairs(updatedComponents) do
             print("  - " .. component)
@@ -40,7 +41,7 @@ updateModule = {
             if not packageFile:match("%.lua$") then -- Check if it's a Lua file
                 break
             end
-    
+
             local package_name = fs.combine(fs.getName(moduleDir), packageFile:match("(.+)%..+$")) -- Construct the package name
             updateModule.updateSingleComponent(package_name)
         end

@@ -8,11 +8,11 @@ removeModule = {
             -- Delete /mpm directory
             fs.delete("/mpm")
             fs.delete("/mpm.lua")
-    
+
             print("\nMPM removed successfully.")
             return
         end
-    
+
         fs.delete("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")
         print("\nPackage " .. package .. " removed successfully.")
     end,

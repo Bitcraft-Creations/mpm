@@ -22,7 +22,7 @@ self_updateModule = {
         local files = load(filelist_content)()
 
         -- Check for updates
-        local updates = self_updateModule.checkUpdates()
+        local updates = self_updateModule.checkUpdates(files)
 
         -- Show output the user
         if #updates == 0 then
@@ -37,7 +37,7 @@ self_updateModule = {
         print("MPM updated successfully.")
     end,
 
-    checkUpdates = function()
+    checkUpdates = function(files)
         local updates = {}
         for _, file in ipairs(files) do
             local url = repositoryUrl .. file
@@ -49,11 +49,11 @@ self_updateModule = {
                     oldContent = oldFile.readAll()
                     oldFile.close()
                 end
-    
+
                 local tempFile = fs.open("/mpm/temp_" .. file, "r")
                 local newContent = tempFile.readAll()
                 tempFile.close()
-    
+
                 if oldContent ~= newContent then
                     updates[#updates + 1] = file
 

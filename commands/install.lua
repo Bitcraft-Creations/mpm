@@ -24,37 +24,6 @@ installModule = {
         end
     end,
 
-    installPackage = function(packageName)
-        local packageURL = packageRepository .. "/" .. packageName .. ".lua"
-        local moduleName = fs.getName(packageName)
-        local packagePath = "/mpm/packages/" .. packageName .. ".lua"
-        local moduleIsInstalled = installModule.isComponentInstalled(packageName)
-
-        if moduleIsInstalled then
-            print("Package already installed: " .. packageName)
-            return
-        end
-
-        if not installModule.downloadFile(packageURL, packagePath) then
-            print("Failed to install: " .. packageName)
-            return
-        end
-
-        local dependencies = getDependencies(packageName)
-
-        if dependencies then
-            for _, dependency in ipairs(dependencies) do
-                if string.find(dependency, "/") then
-                    installModule.installPackage(dependency)
-                else
-                    installModule.installModule(dependency)
-                end
-            end
-        end
-
-        print("Successfully installed: " .. packageName)
-    end,
-
     installModule = function(moduleName)
         -- Construct the path to the module's file list (similar to filelist.lua)
         local moduleFilelistPath = moduleName .. "/filelist.lua"
@@ -72,7 +41,7 @@ installModule = {
         for _, packageName in ipairs(moduleFilelist) do
             installPackage(fs.combine(moduleName, packageName))
         end
-        
+
         print("Successfully installed " .. moduleName)
     end,
 
@@ -80,14 +49,14 @@ installModule = {
         local packageUrl = packageRepository .. "/" .. packageName .. ".lua"
         local moduleName = fs.getDir(packageName)
         local packagePath = "/mpm/packages/" .. packageName .. ".lua"
-        local moduleIsInstalled = isComponentInstalled(moduleName)
-    
+        local moduleIsInstalled = installModule.isComponentInstalled(moduleName)
+
         -- Check if package is already installed
-        if isComponentInstalled(packageName) then
+        if installModule.isComponentInstalled(packageName) then
             print("Package already installed: " .. packageName)
             return
         end
-    
+
         -- Download and install the package
         if not installModule.downloadFile(packageUrl, packagePath) then
             print("Failed to install: " .. packageName)
@@ -95,16 +64,16 @@ installModule = {
         end
 
         -- Check for dependencies and install them
-        local dependencies = getDependencies(moduleName)
+        local dependencies = installModule.getDependencies(moduleName)
         if moduleIsInstalled or not dependencies then
             goto continue
         end
 
         for _, dependency in ipairs(dependencies) do
             if string.find(dependency, "/") then
-                installPackage(dependency)
+                installModule.installPackage(dependency)
             else
-                installModule(dependency)
+                installModule.installModule(dependency)
             end
         end
 
@@ -138,29 +107,29 @@ installModule = {
 
         -- Construct the path to the dependencies.txt file
         local depsPath = moduleName .. "/dependencies.txt"
-    
+
         -- Check if the dependencies.txt file exists, if not download it
         if not fs.exists("/mpm/packages/" .. depsPath) then
             local depsUrl = packageRepository .. "/" .. depsPath
-            if not Core.downloadFile(depsUrl, "/mpm/packages/" .. depsPath) then
+            if not installModule.downloadFile(depsUrl, "/mpm/packages/" .. depsPath) then
                 return
             end
-            
+
             print("Found dependencies for: " .. moduleName)
         end
-    
+
         -- Read the dependencies from the file
         local file = fs.open("/mpm/packages/" .. depsPath, "r")
         for line in file.readLine do
             dependencies[#dependencies+1] = line
         end
         file.close()
-    
+
         return dependencies
     end,
 
     -- Check if package is installed
-    isComponentInstalled(packageName)
+    isComponentInstalled = function(packageName)
         -- If it's a package_name (it has a / in it)
         if string.find(packageName, "/") then
             -- Check if the package is installed
