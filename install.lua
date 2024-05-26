@@ -40,6 +40,6 @@ for _, file in ipairs(files) do
 end
 
 -- Load the core.lua API
-local Core = dofile("/mpm/core.lua")
+-- dofile("/mpm/core.lua")
 
 print("MPM has been successfully installed.")
