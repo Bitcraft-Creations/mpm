@@ -39,7 +39,7 @@ installModule = {
 
         -- Install each package within the module
         for _, packageName in ipairs(moduleFilelist) do
-            installPackage(fs.combine(moduleName, packageName))
+            installModule.installPackage(fs.combine(moduleName, packageName))
         end
 
         print("Successfully installed " .. moduleName)
