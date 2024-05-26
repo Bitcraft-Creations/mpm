@@ -1,5 +1,4 @@
 local self_updateModule = nil
-local Printer = dofile("/mpm/printer.lua")
 local repositoryUrl = "https://shelfwood-mpm.netlify.app/"
 local installModule = dofile("/mpm/commands/install.lua")
 
@@ -7,12 +6,12 @@ self_updateModule = {
     usage = "mpm self_update",
 
     run = function()
-        Printer.print("Updating MPM...")
+        print("Updating MPM...")
 
         -- Download filelist.lua from the install repository
         local success = installModule.downloadFile(repositoryUrl .. "filelist.lua", "/mpm/filelist.lua")
         if not success then
-            Printer.print("Failed to download filelist.lua")
+            print("Failed to download filelist.lua")
             return
         end
 
@@ -27,15 +26,15 @@ self_updateModule = {
 
         -- Show output the user
         if #updates == 0 then
-            Printer.print("No updates found.")
+            print("No updates found.")
             return
         end
 
-        Printer.print("Changes detected for:")
+        print("Changes detected for:")
         for _, file in ipairs(updates) do
-            Printer.print("- " .. file)
+            print("- " .. file)
         end
-        Printer.print("MPM updated successfully.")
+        print("MPM updated successfully.")
     end,
 
     checkUpdates = function()

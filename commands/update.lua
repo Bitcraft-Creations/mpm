@@ -24,13 +24,13 @@ updateModule = {
         end
     
         if #updatedComponents <= 0 then
-            Printer.print("\nNo updates found.")
+            print("\nNo updates found.")
             return
         end
         
-        Printer.print("\nUpdated components:")
+        print("\nUpdated components:")
         for _, component in ipairs(updatedComponents) do
-            Printer.print("  - " .. component)
+            print("  - " .. component)
         end
     end,
 

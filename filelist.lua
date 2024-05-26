@@ -2,7 +2,6 @@
 return {
     "mpm.lua",
     "bootstrap.lua",
-    "printer.lua",
     "commands/install.lua",
     "commands/list.lua",
     "commands/remove.lua",

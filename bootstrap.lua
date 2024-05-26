@@ -1,5 +1,4 @@
 local bootstrapModule = nil
-local fs = require("fs")
 
 bootstrapModule = {
     printUsage = function()
