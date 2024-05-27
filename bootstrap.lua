@@ -4,9 +4,13 @@ bootstrapModule = {
     printUsage = function()
         print("Usage:")
 
-        local files = fs.read("/mpm/commands")
+        local files = fs.list("/mpm/commands")
 
         for _, file in ipairs(files) do
+            if not file:find(".lua") then
+                return
+            end
+
             local module = dofile("/mpm/commands/" .. file)
             print(module.usage or "No usage specified.")
         end
