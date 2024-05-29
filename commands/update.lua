@@ -13,13 +13,13 @@ updateModule = {
             local module_dirs = fs.list("/mpm/packages/")
             for _, module_dir in ipairs(module_dirs) do
                 if updateModule.updatePackagesInModule("/mpm/packages/" .. module_dir) then
-                    updatedComponents[#updatedComponents+1] = module_dir
+                    updatedComponents[#updatedComponents + 1] = module_dir
                 end
             end
         else
             for _, name in ipairs(names) do
                 if updateModule.updateSingleComponent(name) then
-                    updatedComponents[#updatedComponents+1] = name
+                    updatedComponents[#updatedComponents + 1] = name
                 end
             end
         end
@@ -39,11 +39,12 @@ updateModule = {
         local packageFiles = fs.list(moduleDir)
         for _, packageFile in ipairs(packageFiles) do
             if not packageFile:match("%.lua$") then -- Check if it's a Lua file
-                break
+                goto continue
             end
 
             local package_name = fs.combine(fs.getName(moduleDir), packageFile:match("(.+)%..+$")) -- Construct the package name
             updateModule.updateSingleComponent(package_name)
+            ::continue::
         end
     end,
 
@@ -80,7 +81,8 @@ updateModule = {
             end
         else
             -- It's a module, update its file list first
-            if not installModule.downloadFile(repositoryUrl .. "/" .. name .. "/filelist.lua", "/mpm/packages/" .. name .. "/filelist.lua") then
+            if not installModule.downloadFile(repositoryUrl .. "/" .. name .. "/filelist.lua",
+                "/mpm/packages/" .. name .. "/filelist.lua") then
                 print("Failed to update file list for: " .. name)
                 return updated
             end
@@ -93,7 +95,7 @@ updateModule = {
             end
         end
         return updated
-    end,
+    end
 }
 
 return updateModule
