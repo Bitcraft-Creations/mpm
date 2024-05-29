@@ -33,24 +33,41 @@ updateModule = {
         end
 
         print("\nUpdated components:")
-        for _, component in ipairs(updatedComponents) do
-            print("  - " .. component)
+        local function printTree(components, indent)
+            indent = indent or ""
+            for _, component in ipairs(components) do
+                if type(component) == "table" then
+                    print(indent .. "- @" .. component.name)
+                    printTree(component.children, indent .. "  ")
+                else
+                    print(indent .. "- " .. component)
+                end
+            end
         end
+
+        printTree(updatedComponents)
     end,
 
     updatePackagesInModule = function(moduleDir, updatedComponents)
         local packageFiles = fs.list(moduleDir)
         local updated = false
+        local moduleComponents = {
+            name = fs.getName(moduleDir),
+            children = {}
+        }
         for _, packageFile in ipairs(packageFiles) do
             if not packageFile:match("%.lua$") then -- Check if it's a Lua file
                 goto continue
             end
 
             local package_name = fs.combine(fs.getName(moduleDir), packageFile:match("(.+)%..+$")) -- Construct the package name
-            if updateModule.updateSingleComponent(package_name, updatedComponents) then
+            if updateModule.updateSingleComponent(package_name, moduleComponents.children) then
                 updated = true
             end
             ::continue::
+        end
+        if updated then
+            table.insert(updatedComponents, moduleComponents)
         end
         return updated
     end,
@@ -85,7 +102,7 @@ updateModule = {
                 file.write(newContent)
                 file.close()
                 updated = true
-                table.insert(updatedComponents, "  - " .. fs.getName(name) .. " (updated)")
+                table.insert(updatedComponents, fs.getName(name) .. " (updated)")
             end
         else
             -- It's a module, update its file list first
