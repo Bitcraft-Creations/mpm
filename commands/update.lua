@@ -9,16 +9,19 @@ updateModule = {
         local names = {...}
         local updatedComponents = {}
 
+        print("Checking for updated modules...")
+
         if #names == 0 then
             local module_dirs = fs.list("/mpm/packages/")
             for _, module_dir in ipairs(module_dirs) do
-                if updateModule.updatePackagesInModule("/mpm/packages/" .. module_dir) then
+                print("  - @" .. module_dir)
+                if updateModule.updatePackagesInModule("/mpm/packages/" .. module_dir, updatedComponents) then
                     updatedComponents[#updatedComponents + 1] = module_dir
                 end
             end
         else
             for _, name in ipairs(names) do
-                if updateModule.updateSingleComponent(name) then
+                if updateModule.updateSingleComponent(name, updatedComponents) then
                     updatedComponents[#updatedComponents + 1] = name
                 end
             end
@@ -35,20 +38,24 @@ updateModule = {
         end
     end,
 
-    updatePackagesInModule = function(moduleDir)
+    updatePackagesInModule = function(moduleDir, updatedComponents)
         local packageFiles = fs.list(moduleDir)
+        local updated = false
         for _, packageFile in ipairs(packageFiles) do
             if not packageFile:match("%.lua$") then -- Check if it's a Lua file
                 goto continue
             end
 
             local package_name = fs.combine(fs.getName(moduleDir), packageFile:match("(.+)%..+$")) -- Construct the package name
-            updateModule.updateSingleComponent(package_name)
+            if updateModule.updateSingleComponent(package_name, updatedComponents) then
+                updated = true
+            end
             ::continue::
         end
+        return updated
     end,
 
-    updateSingleComponent = function(name)
+    updateSingleComponent = function(name, updatedComponents)
         local updated = false
         -- Check if it's a package or a module
         if string.find(name, "/") then
@@ -78,6 +85,7 @@ updateModule = {
                 file.write(newContent)
                 file.close()
                 updated = true
+                table.insert(updatedComponents, "  - " .. fs.getName(name) .. " (updated)")
             end
         else
             -- It's a module, update its file list first
@@ -89,7 +97,7 @@ updateModule = {
 
             local module_filelist = dofile("/mpm/packages/" .. name .. "/filelist.lua")
             for _, package_name in ipairs(module_filelist) do
-                if updateModule.updateSingleComponent(fs.combine(name, package_name)) then
+                if updateModule.updateSingleComponent(fs.combine(name, package_name), updatedComponents) then
                     updated = true
                 end
             end
