@@ -2,88 +2,66 @@ local updateModule = nil
 local repositoryUrl = "https://shelfwood-mpm-packages.netlify.app/"
 local installModule = dofile("/mpm/commands/install.lua")
 
+--[[
+    This command updates the specified module or all modules if no module is specified.
+    To update a module we need to:
+    - Obtain the filelist.lua
+    - For each file in the list, download the file from the repository
+    - Replace the existing file with the new file
+    - For any files that are no longer in the list, delete them
+]]
 updateModule = {
-    usage = "mpm update <package>",
+    usage = "mpm update <module>",
 
     run = function(...)
         local names = {...}
-
-        print("Checking for updated modules...")
-
-        -- Update all the specified packags e.g. mpm update a b c
+        -- If <module> names are specified, we only update those modules
         if #names > 0 then
-            for _, name in ipairs(names) do
-                updateModule.updateSingleComponent(name)
-            end
-            return
+            updateModules(names)
         end
 
-        -- Update all modules if no package is specified
-        local module_dirs = fs.list("/mpm/packages/")
+        -- If no <module> names are specified, we update all modules
+        updateModules(fs.list("/mpm/packages/"))
+    end,
 
-        for _, module_dir in ipairs(module_dirs) do
-            print("  - @" .. module_dir)
-            updateModule.updatePackagesInModule("/mpm/packages/" .. module_dir)
+    updateModules = function(modules)
+        for _, module in ipairs(modules) do
+            updateModule.updateSingleModule(module)
         end
     end,
 
-    updatePackagesInModule = function(moduleDir)
-        local packageFiles = fs.list(moduleDir)
-        local moduleName = fs.getName(moduleDir)
-        for _, packageFile in ipairs(packageFiles) do
-            if not packageFile:match("%.lua$") then
-                goto continue
-            end
-
-            local package_name = fs.combine(moduleName, packageFile:match("(.+)%..+$")) -- Construct the package name
-            updateModule.updateSingleComponent(package_name, "  - @" .. moduleName)
-            ::continue::
+    updateSingleModule = function(module)
+        print("- @" .. module)
+        local filelist = dofile("/mpm/packages/" .. module .. "/filelist.lua")
+        for _, file in ipairs(filelist) do
+            updateModule.updateSingleFile(module, file)
         end
+
+        removeFilesNotInList(module, filelist)
     end,
 
-    updateSingleComponent = function(name)
-        -- Check if it's a package or a module
-        if string.find(name, "/") then
-            -- It's a package
-            local package_url = repositoryUrl .. "/" .. name .. ".lua"
-            local response = http.get(package_url)
-            if not response then
-                print("Failed to fetch package: " .. name)
-                return
-            end
-            local newContent = response.readAll()
-            response.close()
-
-            local oldContent = nil
-            if fs.exists("/mpm/packages/" .. name .. ".lua") then
-                local file = fs.open("/mpm/packages/" .. name .. ".lua", "r")
-                oldContent = file.readAll()
-                file.close()
-            end
-
-            if oldContent ~= newContent then
-                if fs.exists("/mpm/packages/" .. name .. ".lua") then
-                    fs.delete("/mpm/packages/" .. name .. ".lua")
-                end
-
-                local file = fs.open("/mpm/packages/" .. name .. ".lua", "w")
-                file.write(newContent)
-                file.close()
-                print("  - " .. fs.getName(name) .. " (updated)")
-            end
+    updateSingleFile = function(module, file)
+        -- Obtain the file from the repository
+        local file = http.get(repositoryUrl .. module .. "/" .. file)
+        -- If the file content is the same, return
+        if fs.read("/mpm/packages/" .. module .. "/" .. file) == file then
             return
         end
+        -- Replace the existing file with the new updated file
+        fs.write("/mpm/packages/" .. module .. "/" .. file, file)
 
-        -- It's a module, update its file list first
-        if not installModule.downloadFile(repositoryUrl .. "/" .. name .. "/filelist.lua",
-            "/mpm/packages/" .. name .. "/filelist.lua") then
-            print("Failed to update file list for: " .. name)
-            return
-        end
+        -- Print the file name
+        print("  - " .. file)
+    end,
 
-        local module_filelist = dofile("/mpm/packages/" .. name .. "/filelist.lua")
-        for _, package_name in ipairs(module_filelist) do
-            updateModule.updateSingleComponent(fs.combine(name, package_name), prefix .. "  - @" .. name)
+    removeFilesNotInList = function(module, filelist)
+        local files = fs.list("/mpm/packages/" .. module)
+        for _, file in ipairs(files) do
+            if not isInList(file, filelist) then
+                fs.delete("/mpm/packages/" .. module .. "/" .. file)
+                -- Print the file name with an X to indicate it is deleted
+                print("X - " .. file)
+            end
         end
     end
 }
