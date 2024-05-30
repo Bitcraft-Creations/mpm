@@ -17,11 +17,11 @@ updateModule = {
         local names = {...}
         -- If <module> names are specified, we only update those modules
         if #names > 0 then
-            updateModules(names)
+            updateModule.updateModules(names)
         end
 
         -- If no <module> names are specified, we update all modules
-        updateModules(fs.list("/mpm/packages/"))
+        updateModule.updateModules(fs.list("/mpm/packages/"))
     end,
 
     updateModules = function(modules)
@@ -37,7 +37,7 @@ updateModule = {
             updateModule.updateSingleFile(module, file)
         end
 
-        removeFilesNotInList(module, filelist)
+        updateModule.removeFilesNotInList(module, filelist)
     end,
 
     updateSingleFile = function(module, file)
@@ -57,7 +57,7 @@ updateModule = {
     removeFilesNotInList = function(module, filelist)
         local files = fs.list("/mpm/packages/" .. module)
         for _, file in ipairs(files) do
-            if not isInList(file, filelist) then
+            if not updateModule.isInList(file, filelist) then
                 fs.delete("/mpm/packages/" .. module .. "/" .. file)
                 -- Print the file name with an X to indicate it is deleted
                 print("X - " .. file)
