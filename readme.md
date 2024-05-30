@@ -37,13 +37,13 @@ mpm run tools/inspect_peripheral
 Some modules might have dependencies, you can install multiple modules at once:
 
 ```bash
-mpm install views tools utils peripherals
+mpm install views displays utils peripherals
 ```
 
-For example you could set-up multiple monitors to show information from peripherals in your network by running the `utils/setup_views` script:
+For example you could set-up multiple monitors to show information from peripherals in your network by running the `displays/setup` script:
 
 ```bash
-mpm run utils/setup_views
+mpm run displays/setup
 ```
 
 ## Features in development
