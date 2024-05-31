@@ -29,7 +29,8 @@ end
 downloadFile(mpm_repository_url .. "manifest.json", "/mpm/manifest.json")
 
 -- Load the manifest
-local manifest = dofile("/mpm/manifest.json")
+local manifest = fs.open("/mpm/manifest.json", "r")
+local manifest = textutils.unserialiseJSON(manifest.readAll())
 
 -- Download each module
 for _, moduleName in ipairs(manifest.modules) do
