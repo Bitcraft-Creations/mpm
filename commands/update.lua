@@ -32,7 +32,7 @@ updateModule = {
 
     updateSingleModule = function(module)
         print("- @" .. module)
-        local manifest = dofile("/mpm/packages/" .. module .. "/manifest.json")
+        local manifest = textutils.unserialiseJSON(http.get(repositoryUrl .. module .. "/manifest.json").readAll())
         for _, moduleName in ipairs(manifest.modules) do
             updateModule.updateSingleFile(module, moduleName)
         end

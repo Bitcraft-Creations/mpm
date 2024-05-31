@@ -9,9 +9,9 @@ local function downloadFile(url, path)
         local file = fs.open(path, "w")
         file.write(content)
         file.close()
-        print("File " .. path .. " downloaded successfully.")
+        print("- " .. path)
     else
-        print("Failed to download " .. path)
+        print("x " .. path)
     end
 end
 
@@ -25,14 +25,10 @@ if not fs.exists("/mpm/packages") then
     fs.makeDir("/mpm/packages")
 end
 
--- Download manifest.json
-downloadFile(mpm_repository_url .. "manifest.json", "/mpm/manifest.json")
+local manifest = textutils.unserialiseJSON(http.get(mpm_repository_url .. "manifest.json").readAll())
 
--- Load the manifest
-local manifest = fs.open("/mpm/manifest.json", "r")
-manifest = textutils.unserialiseJSON(manifest.readAll())
+-- Download each file in the manifest
 
--- Download each file
 for _, file in ipairs(manifest) do
     downloadFile(mpm_repository_url .. file, "/mpm/" .. file)
     if file == "mpm.lua" then
