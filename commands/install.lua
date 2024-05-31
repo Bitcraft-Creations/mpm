@@ -20,8 +20,7 @@ installModule = {
 
     installModule = function(moduleName)
         -- Construct the path to the module's manifest.json (similar to manifest.json)
-        local moduleManifest = textutils.unserialiseJSON(http.get(
-                                                             packageRepository .. "/" .. moduleName .. "/manifest.json")
+        local moduleManifest = textutils.unserialiseJSON(http.get(packageRepository .. moduleName .. "/manifest.json")
                                                              .readAll())
 
         -- Install each package within the module

@@ -15,28 +15,28 @@ self_updateModule = {
 
         for _, file in ipairs(manifest) do
             -- We get the file from the repository and compare it to our local file (if one exists)
-            local remoteFile = http.get(repositoryUrl .. file)
-            local localFile = fs.open(file, "r")
-            local remoteFileContents = remoteFile.readAll()
-            local localFileContents = localFile.readAll()
-
-            if remoteFileContents ~= localFileContents then
-                print("- " .. file)
-                localFile.write(remoteFileContents)
-            end
-
-            remoteFile.close()
-            localFile.close()
-        end
-
-        -- Finally we clean up any files that are no longer in the manifest 
-        -- By checking any file path in the mpm folder (except for packages) to check if it's present in the file list
-        for _, file in ipairs(manifest) do
+            local remoteFileContents = http.get(repositoryUrl .. file).readAll()
             local filePath = "/mpm/" .. file
-            if not fs.exists(filePath) then
-                fs.delete(filePath)
-                print("x " .. filePath)
+            local localFile = fs.open(filePath, "r")
+
+            -- If it's the same, we skip it
+            if localFile then
+                local localFileContents = localFile.readAll()
+                if remoteFileContents == localFileContents then
+                    localFile.close()
+                    goto continue
+                end
+                localFile.close()
             end
+
+            if file == "mpm.lua" then
+                fs.delete("mpm.lua")
+                fs.open("mpm.lua", "w+").write(remoteFileContents)
+            end
+
+            print("- " .. file)
+            fs.open(filePath, "w+").write(remoteFileContents)
+            ::continue::
         end
     end
 }
