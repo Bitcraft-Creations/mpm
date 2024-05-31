@@ -25,17 +25,17 @@ if not fs.exists("/mpm/packages") then
     fs.makeDir("/mpm/packages")
 end
 
--- Download filelist.lua
-downloadFile(mpm_repository_url .. "filelist.lua", "/mpm/filelist.lua")
+-- Download manifest.json
+downloadFile(mpm_repository_url .. "manifest.json", "/mpm/manifest.json")
 
--- Load the filelist
-local files = dofile("/mpm/filelist.lua")
+-- Load the manifest
+local manifest = dofile("/mpm/manifest.json")
 
--- Download each file
-for _, file in ipairs(files) do
-    downloadFile(mpm_repository_url .. file, "/mpm/" .. file)
-    if file == "mpm.lua" then
-        fs.move("/mpm/mpm.lua", "/" .. file)
+-- Download each module
+for _, moduleName in ipairs(manifest.modules) do
+    downloadFile(mpm_repository_url .. moduleName .. ".lua", "/mpm/" .. moduleName .. ".lua")
+    if moduleName == "mpm" then
+        fs.move("/mpm/mpm.lua", "/" .. moduleName .. ".lua")
     end
 end
 

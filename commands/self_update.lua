@@ -8,21 +8,19 @@ self_updateModule = {
     run = function()
         print("Updating MPM...")
 
-        -- Download filelist.lua from the install repository
-        local success = installModule.downloadFile(repositoryUrl .. "filelist.lua", "/mpm/filelist.lua")
-        if not success then
-            print("Failed to download filelist.lua")
-            return
+        -- Download manifest.json files for each package
+        local packages = fs.list("/mpm/packages/")
+        for _, package in ipairs(packages) do
+            local manifestUrl = repositoryUrl .. package .. "/manifest.json"
+            local manifestPath = "/mpm/packages/" .. package .. "/manifest.json"
+            local success = installModule.downloadFile(manifestUrl, manifestPath)
+            if not success then
+                print("Failed to download manifest.json for " .. package)
+            end
         end
 
-        -- Load the filelist
-        local file = fs.open("/mpm/filelist.lua", "r")
-        local filelist_content = file.readAll()
-        file.close()
-        local files = load(filelist_content)()
-
         -- Check for updates
-        local updates = self_updateModule.checkUpdates(files)
+        local updates = self_updateModule.checkUpdates(packages)
 
         -- Show output the user
         if #updates == 0 then
@@ -37,43 +35,48 @@ self_updateModule = {
         print("MPM updated successfully.")
     end,
 
-    checkUpdates = function(files)
+    checkUpdates = function(packages)
         local updates = {}
-        for _, file in ipairs(files) do
-            local url = repositoryUrl .. file
-            local newContent = installModule.downloadFile(url, "/mpm/temp_" .. file)
-            if newContent then
-                local oldContent = nil
-                if fs.exists("/mpm/" .. file) then
-                    local oldFile = fs.open("/mpm/" .. file, "r")
-                    oldContent = oldFile.readAll()
-                    oldFile.close()
-                end
-
-                local tempFile = fs.open("/mpm/temp_" .. file, "r")
-                local newContent = tempFile.readAll()
-                tempFile.close()
-
-                if oldContent ~= newContent then
-                    updates[#updates + 1] = file
-
-                    fs.delete("/mpm/" .. file)
-                    fs.move("/mpm/temp_" .. file, "/mpm/" .. file)
-
-                    -- If the file is mpm.lua then copy it to the root directory
-                    if file == "mpm.lua" then
-                        if fs.exists("/mpm.lua") then
-                            fs.delete("/mpm.lua")
-                        end
-                        fs.copy("/mpm/mpm.lua", "/mpm.lua")
+        for _, package in ipairs(packages) do
+            local manifestPath = "/mpm/packages/" .. package .. "/manifest.json"
+            local manifest = dofile(manifestPath)
+            for _, moduleName in ipairs(manifest.modules) do
+                local url = repositoryUrl .. package .. "/" .. moduleName .. ".lua"
+                local newContent = installModule.downloadFile(url, "/mpm/temp_" .. moduleName .. ".lua")
+                if newContent then
+                    local oldContent = nil
+                    if fs.exists("/mpm/packages/" .. package .. "/" .. moduleName .. ".lua") then
+                        local oldFile = fs.open("/mpm/packages/" .. package .. "/" .. moduleName .. ".lua", "r")
+                        oldContent = oldFile.readAll()
+                        oldFile.close()
                     end
-                else
-                    fs.delete("/mpm/temp_" .. file)
+
+                    local tempFile = fs.open("/mpm/temp_" .. moduleName .. ".lua", "r")
+                    local newContent = tempFile.readAll()
+                    tempFile.close()
+
+                    if oldContent ~= newContent then
+                        updates[#updates + 1] = moduleName
+
+                        fs.delete("/mpm/packages/" .. package .. "/" .. moduleName .. ".lua")
+                        fs.move("/mpm/temp_" .. moduleName .. ".lua",
+                            "/mpm/packages/" .. package .. "/" .. moduleName .. ".lua")
+
+                        -- If the file is mpm.lua then copy it to the root directory
+                        if moduleName == "mpm" then
+                            if fs.exists("/mpm.lua") then
+                                fs.delete("/mpm.lua")
+                            end
+                            fs.copy("/mpm/mpm.lua", "/mpm.lua")
+                        end
+                    else
+                        fs.delete("/mpm/temp_" .. moduleName .. ".lua")
+                    end
                 end
             end
         end
         return updates
-    end,
+    end
 }
 
 return self_updateModule

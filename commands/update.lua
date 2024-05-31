@@ -5,10 +5,10 @@ local installModule = dofile("/mpm/commands/install.lua")
 --[[
     This command updates the specified module or all modules if no module is specified.
     To update a module we need to:
-    - Obtain the filelist.lua
-    - For each file in the list, download the file from the repository
-    - Replace the existing file with the new file
-    - For any files that are no longer in the list, delete them
+    - Obtain the manifest.json
+    - For each module in the manifest, download the module from the repository
+    - Replace the existing module with the new module
+    - For any modules that are no longer in the manifest, delete them
 ]]
 updateModule = {
     usage = "mpm update <module>",
@@ -32,37 +32,50 @@ updateModule = {
 
     updateSingleModule = function(module)
         print("- @" .. module)
-        local filelist = dofile("/mpm/packages/" .. module .. "/filelist.lua")
-        for _, file in ipairs(filelist) do
-            updateModule.updateSingleFile(module, file)
+        local manifest = dofile("/mpm/packages/" .. module .. "/manifest.json")
+        for _, moduleName in ipairs(manifest.modules) do
+            updateModule.updateSingleFile(module, moduleName)
         end
 
-        updateModule.removeFilesNotInList(module, filelist)
+        updateModule.removeFilesNotInList(module, manifest.modules)
     end,
 
-    updateSingleFile = function(module, file)
+    updateSingleFile = function(module, filename)
         -- Obtain the file from the repository
-        local file = http.get(repositoryUrl .. module .. "/" .. file)
+        local content = http.get(repositoryUrl .. module .. "/" .. filename .. ".lua")
+
         -- If the file content is the same, return
-        if fs.read("/mpm/packages/" .. module .. "/" .. file) == file then
+        local installedContent = fs.open("/mpm/packages/" .. module .. "/" .. filename .. '.lua', "r").readAll()
+
+        if installedContent == content then
             return
         end
+
         -- Replace the existing file with the new updated file
-        fs.write("/mpm/packages/" .. module .. "/" .. file, file)
+        fs.write("/mpm/packages/" .. module .. "/" .. filename .. '.lua', content)
 
         -- Print the file name
-        print("  - " .. file)
+        print("  - " .. filename)
     end,
 
-    removeFilesNotInList = function(module, filelist)
+    removeFilesNotInList = function(module, modules)
         local files = fs.list("/mpm/packages/" .. module)
         for _, file in ipairs(files) do
-            if not updateModule.isInList(file, filelist) then
+            if not updateModule.isInList(file, modules) then
                 fs.delete("/mpm/packages/" .. module .. "/" .. file)
                 -- Print the file name with an X to indicate it is deleted
                 print("X - " .. file)
             end
         end
+    end,
+
+    isInList = function(file, list)
+        for _, item in ipairs(list) do
+            if item .. ".lua" == file then
+                return true
+            end
+        end
+        return false
     end
 }
 

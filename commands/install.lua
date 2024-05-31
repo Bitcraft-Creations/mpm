@@ -25,20 +25,20 @@ installModule = {
     end,
 
     installModule = function(moduleName)
-        -- Construct the path to the module's file list (similar to filelist.lua)
-        local moduleFilelistPath = moduleName .. "/filelist.lua"
+        -- Construct the path to the module's manifest.json (similar to manifest.json)
+        local moduleManifestPath = moduleName .. "/manifest.json"
 
-        if not installModule.downloadFile(packageRepository .. "/" .. moduleFilelistPath,
-            "/mpm/packages/" .. moduleFilelistPath) then
-            print("Failed to obtain file list for: " .. moduleName)
+        if not installModule.downloadFile(packageRepository .. "/" .. moduleManifestPath,
+            "/mpm/packages/" .. moduleManifestPath) then
+            print("Failed to obtain manifest for: " .. moduleName)
             return
         end
 
-        -- Load the module's filelist
-        local moduleFilelist = dofile("/mpm/packages/" .. moduleFilelistPath)
+        -- Load the module's manifest
+        local moduleManifest = dofile("/mpm/packages/" .. moduleManifestPath)
 
         -- Install each package within the module
-        for _, packageName in ipairs(moduleFilelist) do
+        for _, packageName in ipairs(moduleManifest.modules) do
             installModule.installPackage(fs.combine(moduleName, packageName))
         end
 
@@ -106,7 +106,7 @@ installModule = {
         local dependencies = {}
 
         -- Construct the path to the dependencies.txt file
-        local depsPath = moduleName .. "/dependencies.txt"
+        local depsPath = moduleName .. "/manifest.json"
 
         -- Check if the dependencies.txt file exists, if not download it
         if not fs.exists("/mpm/packages/" .. depsPath) then
@@ -120,8 +120,9 @@ installModule = {
 
         -- Read the dependencies from the file
         local file = fs.open("/mpm/packages/" .. depsPath, "r")
-        for line in file.readLine do
-            dependencies[#dependencies+1] = line
+        local manifest = dofile("/mpm/packages/" .. depsPath)
+        for _, dependency in ipairs(manifest.dependencies) do
+            dependencies[#dependencies + 1] = dependency
         end
         file.close()
 
@@ -137,8 +138,8 @@ installModule = {
         end
 
         -- Check if the module is installed
-        return fs.exists("/mpm/packages/" .. packageName .. "/filelist.lua")
-    end,
+        return fs.exists("/mpm/packages/" .. packageName .. "/manifest.json")
+    end
 }
 
 return installModule
