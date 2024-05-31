@@ -3,8 +3,6 @@ local mpm_repository_url = "https://shelfwood-mpm.netlify.app/"
 
 -- Function to download a file from a URL
 local function downloadFile(url, path)
-    print(url)
-    print(path)
     local response = http.get(url)
     if response and response.getResponseCode() == 200 then
         local content = response.readAll()
@@ -32,8 +30,7 @@ downloadFile(mpm_repository_url .. "manifest.json", "/mpm/manifest.json")
 
 -- Load the manifest
 local manifest = fs.open("/mpm/manifest.json", "r")
-local manifest = textutils.unserialiseJSON(manifest.readAll())
-manifest.close()
+manifest = textutils.unserialiseJSON(manifest.readAll())
 
 -- Download each file
 for _, file in ipairs(manifest) do
