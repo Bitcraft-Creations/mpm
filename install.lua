@@ -34,9 +34,9 @@ local manifest = textutils.unserialiseJSON(manifest.readAll())
 
 -- Download each module
 for _, moduleName in ipairs(manifest) do
-    downloadFile(mpm_repository_url .. moduleName .. ".lua", "/mpm/" .. moduleName .. ".lua")
+    downloadFile(mpm_repository_url .. moduleName, "/mpm/" .. moduleName)
     if moduleName == "mpm" then
-        fs.move("/mpm/mpm.lua", "/" .. moduleName .. ".lua")
+        fs.move("/mpm/mpm.lua", "/" .. moduleName)
     end
 end
 
