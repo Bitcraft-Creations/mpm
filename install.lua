@@ -33,12 +33,13 @@ downloadFile(mpm_repository_url .. "manifest.json", "/mpm/manifest.json")
 -- Load the manifest
 local manifest = fs.open("/mpm/manifest.json", "r")
 local manifest = textutils.unserialiseJSON(manifest.readAll())
+manifest.close()
 
--- Download each module
-for _, moduleName in ipairs(manifest) do
-    downloadFile(mpm_repository_url .. moduleName, "/mpm/" .. moduleName)
-    if moduleName == "mpm" then
-        fs.move("/mpm/mpm.lua", "/" .. moduleName)
+-- Download each file
+for _, file in ipairs(manifest) do
+    downloadFile(mpm_repository_url .. file, "/mpm/" .. file)
+    if file == "mpm.lua" then
+        fs.move("/mpm/mpm.lua", "/" .. file)
     end
 end
 
