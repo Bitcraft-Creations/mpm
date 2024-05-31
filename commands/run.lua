@@ -11,7 +11,7 @@ function mpm(module)
 end
 
 runModule = {
-    usage = "mpm remove <package>",
+    usage = "mpm run <package>",
 
     run = function(package)
         local package_path = "/mpm/packages/" .. package .. ".lua"
@@ -21,7 +21,7 @@ runModule = {
         end
 
         dofile(package_path)
-    end,
+    end
 }
 
 return runModule
