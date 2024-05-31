@@ -40,7 +40,4 @@ for _, file in ipairs(manifest) do
     end
 end
 
--- Load the core.lua API
--- dofile("/mpm/core.lua")
-
 print("MPM has been successfully installed.")
