@@ -1,4 +1,4 @@
--- install.lua
+-- This file is used to install MPM
 local mpm_repository_url = "https://shelfwood-mpm.netlify.app/"
 
 -- Function to download a file from a URL

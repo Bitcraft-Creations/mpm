@@ -1,5 +1,8 @@
-local installModule = nil
-local packageRepository = "https://shelfwood-mpm-packages.netlify.app/"
+-- This command is used to install a module: `mpm install <module_name>`
+local File = dofile("/mpm/utils/file.lua")
+local ModuleRepository = dofile("/mpm/utils/module_repository.lua")
+
+local installModule
 
 installModule = {
     usage = "mpm install <module> <optional:module_2> etc.",
@@ -13,47 +16,35 @@ installModule = {
         end
 
         for _, name in ipairs(names) do
-            print("Installing module: " .. name)
+            if ModuleRepository.isInstalled(name) then
+                print("Module already installed: " .. name)
+                goto nextModule
+            end
+
             installModule.installModule(name)
+
+            ::nextModule::
         end
     end,
 
-    installModule = function(moduleName)
+    installModule = function(name)
         -- Construct the path to the module's manifest.json (similar to manifest.json)
-        local response = http.get(packageRepository .. moduleName .. "/manifest.json")
-        local moduleManifest = textutils.unserialiseJSON(response.readAll())
-        response.close()
+        local manifest = ModuleRepository.getModule(name)
+        print("@" .. manifest.name)
+        print(manifest.description)
 
         -- Install each package within the module
-        for _, packageName in ipairs(moduleManifest.modules) do
-            installModule.installModule(fs.combine(moduleName, packageName))
+        for _, packageName in ipairs(manifest.modules) do
+            installModule.installPackage(name, packageName)
         end
 
-        print("Successfully installed " .. moduleName)
+        print("Successfully installed @" .. name .. '!')
     end,
 
-    downloadFile = function(url, path)
-        -- Attempt to open a connection to the given URL
-        local response = http.get(url)
-
-        if not response then
-            return false
-        end
-
-        local content = response.readAll()
-        response.close()
-
-        -- Save the content to the specified path
-        local file = fs.open(path, "w")
-        file.write(content)
-        file.close()
-
-        return true
-    end,
-
-    -- Check if module is installed
-    isModuleInstalled = function(moduleName)
-        return fs.exists("/mpm/packages/" .. moduleName .. ".lua")
+    installPackage = function(module, package)
+        print("- " .. package)
+        local file = ModuleRepository.getPackage(module, package)
+        File.put("/mpm/packages/" .. module .. "/" .. package, file)
     end
 }
 
