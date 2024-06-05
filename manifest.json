@@ -7,5 +7,7 @@
   "commands/run.lua",
   "commands/self_update.lua",
   "commands/startup.lua",
-  "commands/update.lua"
+  "commands/update.lua",
+  "utils/file.lua",
+  "utils/module_repository.lua"
 ]
