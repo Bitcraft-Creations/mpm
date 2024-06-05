@@ -17,7 +17,7 @@ installModule = {
 
         for _, name in ipairs(names) do
             if ModuleRepository.isInstalled(name) then
-                print("Module already installed: " .. name)
+                print("Module already installed. Did you mean `mpm update " .. name .. "`?")
                 goto nextModule
             end
 
