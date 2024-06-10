@@ -1,13 +1,13 @@
 [
   "mpm.lua",
   "bootstrap.lua",
-  "commands/install.lua",
-  "commands/list.lua",
-  "commands/remove.lua",
-  "commands/run.lua",
-  "commands/self_update.lua",
-  "commands/startup.lua",
-  "commands/update.lua",
-  "utils/file.lua",
-  "utils/module_repository.lua"
+  "Commands/Install.lua",
+  "Commands/List.lua",
+  "Commands/Remove.lua",
+  "Commands/Run.lua",
+  "Commands/SelfUpdate.lua",
+  "Commands/Startup.lua",
+  "Commands/Update.lua",
+  "Utils/File.lua",
+  "Utils/ModuleRepository.lua"
 ]
