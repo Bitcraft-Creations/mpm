@@ -20,9 +20,9 @@ if not fs.exists("/mpm") then
     fs.makeDir("/mpm")
 end
 
--- Create the /mpm/packages directory if it doesn't exist
-if not fs.exists("/mpm/packages") then
-    fs.makeDir("/mpm/packages")
+-- Create the /mpm/Packages directory if it doesn't exist
+if not fs.exists("/mpm/Packages") then
+    fs.makeDir("/mpm/Packages")
 end
 
 local manifest = textutils.unserialiseJSON(http.get(mpm_repository_url .. "manifest.json").readAll())

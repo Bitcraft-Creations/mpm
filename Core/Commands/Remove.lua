@@ -13,7 +13,7 @@ removeModule = {
             return
         end
 
-        exports("Utils.File").delete("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")
+        exports("Utils.File").delete("/mpm/Packages/" .. package:gsub("/", "-") .. ".lua")
         print("\nPackage " .. package .. " removed successfully.")
     end,
 }

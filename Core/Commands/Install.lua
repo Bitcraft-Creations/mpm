@@ -41,7 +41,7 @@ installModule = {
     installPackage = function(module, package)
         print("- " .. package)
         local file = exports("Utils.ModuleRepository").getPackage(module, package)
-        exports("Utils.File").put("/mpm/packages/" .. module .. "/" .. package, file)
+        exports("Utils.File").put("/mpm/Packages/" .. module .. "/" .. package, file)
     end
 }
 

@@ -32,7 +32,7 @@ ModuleRepository = {
         return content
     end,
     isInstalled = function(module)
-        return File.exists("/mpm/packages/" .. module)
+        return File.exists("/mpm/Packages/" .. module)
     end
 }
 
