@@ -21,7 +21,7 @@ updateModule = {
         end
 
         -- If no <module> names are specified, we update all modules
-        updateModule.updateModules(fs.list("/mpm/packages/"))
+        updateModule.updateModules(exports("utils.file").list("/mpm/packages/"))
     end,
 
     updateModules = function(modules)
@@ -45,24 +45,24 @@ updateModule = {
         local content = http.get(repositoryUrl .. module .. "/" .. filename .. ".lua")
 
         -- If the file content is the same, return
-        local installedContent = fs.open("/mpm/packages/" .. module .. "/" .. filename .. '.lua', "r").readAll()
+        local installedContent = exports("utils.file").open("/mpm/packages/" .. module .. "/" .. filename .. '.lua', "r").readAll()
 
         if installedContent == content then
             return
         end
 
         -- Replace the existing file with the new updated file
-        fs.write("/mpm/packages/" .. module .. "/" .. filename .. '.lua', content)
+        exports("utils.file").write("/mpm/packages/" .. module .. "/" .. filename .. '.lua', content)
 
         -- Print the file name
         print("  - " .. filename)
     end,
 
     removeFilesNotInList = function(module, modules)
-        local files = fs.list("/mpm/packages/" .. module)
+        local files = exports("utils.file").list("/mpm/packages/" .. module)
         for _, file in ipairs(files) do
             if not updateModule.isInList(file, modules) then
-                fs.delete("/mpm/packages/" .. module .. "/" .. file)
+                exports("utils.file").delete("/mpm/packages/" .. module .. "/" .. file)
                 -- Print the file name with an X to indicate it is deleted
                 print("X - " .. file)
             end

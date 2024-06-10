@@ -1,4 +1,19 @@
 local bootstrapModule = nil
+local modules = {}
+
+function exports(moduleNamespace)
+    local modulePath = string.format("/mpm/%s.lua", moduleNamespace:gsub("%.", "/"))
+    
+    if not fs.exists(modulePath) then
+        error("The util " .. moduleNamespace .. " does not exist.")
+    end
+
+    if not modules[moduleNamespace] then
+        modules[moduleNamespace] = dofile(modulePath)
+    end
+
+    return modules[moduleNamespace]
+end
 
 bootstrapModule = {
     printUsage = function()
@@ -24,9 +39,19 @@ bootstrapModule = {
             return
         end
 
-        local module = dofile("/mpm/commands/" .. command .. ".lua")
+        local commandPath = string.format("/mpm/commands/%s.lua", command)
 
-        module.run(table.unpack(tArgs, 2))
+        if not fs.exists(commandPath) then
+            error("Error: Command does not exist.")
+        end
+
+        local module = dofile(commandPath)
+
+        if module and module.run then
+            return module.run(table.unpack(tArgs, 2))
+        end
+
+        error("Error: Command module is not properly defined.")
     end
 }
 

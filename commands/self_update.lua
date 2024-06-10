@@ -17,7 +17,7 @@ self_updateModule = {
             -- We get the file from the repository and compare it to our local file (if one exists)
             local remoteFileContents = http.get(repositoryUrl .. file).readAll()
             local filePath = "/mpm/" .. file
-            local localFile = fs.open(filePath, "r")
+            local localFile = exports("utils.file").open(filePath, "r")
 
             -- If it's the same, we skip it
             if localFile then
@@ -30,12 +30,12 @@ self_updateModule = {
             end
 
             if file == "mpm.lua" then
-                fs.delete("mpm.lua")
-                fs.open("mpm.lua", "w+").write(remoteFileContents)
+                exports("utils.file").delete("mpm.lua")
+                exports("utils.file").open("mpm.lua", "w+").write(remoteFileContents)
             end
 
             print("- " .. file)
-            fs.open(filePath, "w+").write(remoteFileContents)
+            exports("utils.file").open(filePath, "w+").write(remoteFileContents)
             ::continue::
         end
     end

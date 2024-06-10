@@ -1,7 +1,4 @@
 -- This command is used to install a module: `mpm install <module_name>`
-local File = dofile("/mpm/utils/file.lua")
-local ModuleRepository = dofile("/mpm/utils/module_repository.lua")
-
 local installModule
 
 installModule = {
@@ -16,7 +13,7 @@ installModule = {
         end
 
         for _, name in ipairs(names) do
-            if ModuleRepository.isInstalled(name) then
+            if exports("utils.module_repository").isInstalled(name) then
                 print("Module already installed. Did you mean `mpm update " .. name .. "`?")
                 goto nextModule
             end
@@ -29,7 +26,7 @@ installModule = {
 
     installModule = function(name)
         -- Construct the path to the module's manifest.json (similar to manifest.json)
-        local manifest = ModuleRepository.getModule(name)
+        local manifest = exports("utils.module_repository").getModule(name)
         print("@" .. manifest.name)
         print(manifest.description)
 
@@ -43,8 +40,8 @@ installModule = {
 
     installPackage = function(module, package)
         print("- " .. package)
-        local file = ModuleRepository.getPackage(module, package)
-        File.put("/mpm/packages/" .. module .. "/" .. package, file)
+        local file = exports("utils.module_repository").getPackage(module, package)
+        exports("utils.file").put("/mpm/packages/" .. module .. "/" .. package, file)
     end
 }
 
