@@ -19,14 +19,14 @@ bootstrapModule = {
     printUsage = function()
         print("Usage:")
 
-        local files = fs.list("/mpm/commands")
+        local files = fs.list("/mpm/Core/Commands/")
 
         for _, file in ipairs(files) do
             if not file:find(".lua") then
                 return
             end
 
-            local module = dofile("/mpm/commands/" .. file)
+            local module = dofile("/mpm/Core/Commands/" .. file)
             print(module.usage or "No usage specified.")
         end
     end,
@@ -39,7 +39,7 @@ bootstrapModule = {
             return
         end
 
-        local commandPath = string.format("/mpm/commands/%s.lua", command)
+        local commandPath = string.format("/mpm/Core/Commands/%s.lua", command)
 
         if not fs.exists(commandPath) then
             error("Error: Command does not exist.")

@@ -1,6 +1,6 @@
 local self_updateModule = nil
 local repositoryUrl = "https://shelfwood-mpm.netlify.app/"
-local installModule = dofile("/mpm/commands/install.lua")
+local installModule = dofile("/mpm/Core/Commands/install.lua")
 
 --[[
     This module is responsible for updating MPM itself.

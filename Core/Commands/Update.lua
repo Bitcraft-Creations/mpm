@@ -1,6 +1,6 @@
 local updateModule = nil
 local repositoryUrl = "https://shelfwood-mpm-packages.netlify.app/"
-local installModule = dofile("/mpm/commands/install.lua")
+local installModule = dofile("/mpm/Core/Commands/install.lua")
 
 --[[
     This command updates the specified module or all modules if no module is specified.

@@ -1,5 +1,5 @@
 -- The `ModuleRepository` module contains helpers to get code from the module repository.
-local File = dofile("/mpm/utils/file.lua")
+local File = dofile("/mpm/Core/Utils/file.lua")
 local packageRepository = "https://shelfwood-mpm-packages.netlify.app/"
 
 local ModuleRepository
