@@ -45,14 +45,14 @@ updateModule = {
         local content = http.get(repositoryUrl .. module .. "/" .. filename .. ".lua")
 
         -- If the file content is the same, return
-        local installedContent = exports("Utils.File").open("/mpm/Packages/" .. module .. "/" .. filename .. '.lua', "r").readAll()
+        local installedContent = exports("Utils.File").get("/mpm/Packages/" .. module .. "/" .. filename .. '.lua')
 
         if installedContent == content then
             return
         end
 
         -- Replace the existing file with the new updated file
-        exports("Utils.File").write("/mpm/Packages/" .. module .. "/" .. filename .. '.lua', content)
+        exports("Utils.File").put("/mpm/Packages/" .. module .. "/" .. filename .. '.lua', content)
 
         -- Print the file name
         print("  - " .. filename)
