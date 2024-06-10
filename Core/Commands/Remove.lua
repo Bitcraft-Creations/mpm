@@ -6,14 +6,14 @@ removeModule = {
     run = function(package)
         if package == 'self' then
             -- Delete /mpm directory
-            exports("utils.file").delete("/mpm")
-            exports("utils.file").delete("/mpm.lua")
+            exports("Utils.File").delete("/mpm")
+            exports("Utils.File").delete("/mpm.lua")
 
             print("\nMPM removed successfully.")
             return
         end
 
-        exports("utils.file").delete("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")
+        exports("Utils.File").delete("/mpm/packages/" .. package:gsub("/", "-") .. ".lua")
         print("\nPackage " .. package .. " removed successfully.")
     end,
 }

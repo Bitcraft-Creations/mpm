@@ -17,7 +17,7 @@ startupModule = {
         startup_content = startup_content .. "shell.run('mpm run " .. package .. " " .. parameters .. "')"
 
         -- Write the startup script content to startup.lua
-        local file = exports("utils.file").open("./startup.lua", "w")
+        local file = exports("Utils.File").open("./startup.lua", "w")
         file.write(startup_content)
         file.close()
 

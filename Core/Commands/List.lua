@@ -5,7 +5,7 @@ listModule = {
 
     run = function()
         print("\nListing installed packages:")
-        local files = exports("utils.file").list("/mpm/packages/")
+        local files = exports("Utils.File").list("/mpm/packages/")
         for _, file in ipairs(files) do
             print("  - " .. file)
         end
