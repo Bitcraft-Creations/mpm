@@ -2,7 +2,7 @@ local bootstrapModule = nil
 local modules = {}
 
 function exports(moduleNamespace)
-    local modulePath = string.format("/mpm/%s.lua", moduleNamespace:gsub("%.", "/"))
+    local modulePath = string.format("/mpm/Core/%s.lua", moduleNamespace:gsub("%.", "/"))
     
     if not fs.exists(modulePath) then
         error("The util " .. moduleNamespace .. " does not exist.")
