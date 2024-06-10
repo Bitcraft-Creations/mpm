@@ -32,7 +32,7 @@ local manifest = textutils.unserialiseJSON(http.get(mpm_repository_url .. "manif
 for _, file in ipairs(manifest) do
     downloadFile(mpm_repository_url .. file, "/mpm/Core/" .. file)
     if file == "mpm.lua" then
-        fs.move("/mpm/mpm.lua", "/" .. file)
+        fs.move("/mpm/Core/mpm.lua", "/" .. file)
     end
 end
 
