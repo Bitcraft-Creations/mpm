@@ -1,7 +1,7 @@
 local PackageRepository
 
 --[[
-    The `ModuleRepository` module contains helpers to get code from the module repository.
+    The `PackageRepository` module contains helpers to get code from the package repository.
 ]]
 
 local packageRepository = "https://shelfwood-mpm-packages.netlify.app/"
@@ -21,8 +21,8 @@ PackageRepository = {
 
         return manifest
     end,
-    downloadFile = function(module, filename)
-        local response = http.get(packageRepository .. module .. "/" .. filename)
+    downloadFile = function(package, filename)
+        local response = http.get(packageRepository .. package .. "/" .. filename)
 
         local content = response.readAll()
         response.close()

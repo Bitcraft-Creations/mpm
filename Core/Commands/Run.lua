@@ -1,13 +1,13 @@
 local runModule = nil
 
-function mpm(module)
-    local path = "/mpm/Packages/" .. module .. ".lua"
+function mpm(package)
+    local path = "/mpm/Packages/" .. package .. ".lua"
 
     if exports("Utils.File").exists(path) then
         return dofile(path)
     end
 
-    error("Module '" .. module .. "' not found in /mpm/Packages")
+    error("Package '" .. package .. "' not found in /mpm/Packages")
 end
 
 runModule = {

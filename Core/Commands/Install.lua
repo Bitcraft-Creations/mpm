@@ -1,8 +1,8 @@
--- This command is used to install a module: `mpm install <module_name>`
+-- This command is used to install a package: `mpm install <package_name>`
 local installModule
 
 installModule = {
-    usage = "mpm install <package> <optional:module_2> etc.",
+    usage = "mpm install <package> <optional:package_2> etc.",
 
     run = function(...)
         local names = {...}

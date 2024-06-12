@@ -1,27 +1,27 @@
 local this = nil
 --[[
-    The ModuleDisk module is used to handle disk operations related to updating and installing modules
+    The ModuleDisk module is used to handle disk operations related to updating and installing packages
     into the mpm/Packages directory.
 
-    A module is a directory in the mpm/Packages directory. The name of the module is the name
-    of the directory. The module contains a manifest.json file which contains:
+    A package is a directory in the mpm/Packages directory. The name of the package is the name
+    of the directory. The package contains a manifest.json file which contains:
     - manifest.name
     - manifest.description
-    - manifest.modules (a table of strings representing .lua files to download)
+    - manifest.files (a table of strings representing files to download)
 ]]
 local repositoryUrl = "https://shelfwood-mpm-packages.netlify.app/"
 local packageDirectory = "/mpm/Packages/"
 
 this = {
     install = function(name)
-        -- Construct the path to the module's manifest.json (similar to manifest.json)
+        -- Construct the path to the package's manifest.json (similar to manifest.json)
         local manifest = exports("Utils.PackageRepository").getPackage(name)
         print("\n@" .. manifest.name .. "\n")
         print(manifest.description)
 
-        -- Install each package within the module
+        -- Install each file within the package
         for _, file in ipairs(manifest.files) do
-            this.installFile(package, file)
+            this.installFile(name, file)
         end
 
         print("\nSuccessfully installed @" .. name .. '!\n')

@@ -1,52 +1,52 @@
 local this
 
 --[[
-    This command updates the specified module or all modules if no module is specified.
-    To update a module we need to:
+    This command updates the specified package or all packages if no package is specified.
+    To update a package we need to:
     - Obtain the manifest.json
-    - For each module in the manifest, download the module from the repository
-    - Replace the existing module with the new module
-    - For any modules that are no longer in the manifest, delete them
+    - For each file in the manifest.files, download the file from the package github repository
+    - Replace the existing file with the new file
+    - For any packages that are no longer in the manifest, delete them
 ]]
 
 this = {
-    usage = "mpm update <module>",
+    usage = "mpm update <package>",
 
     run = function(...)
         local names = {...}
         print("\nChecking for updates...\n")
-        -- If <module> names are specified, we only update those modules
+        -- If <package> names are specified, we only update those packages
         if #names > 0 then
-            this.updateModules(names)
+            this.updatePackages(names)
 
             return
         end
 
-        -- If no <module> names are specified, we update all modules
-        this.updateModules(exports("Utils.File").list("/mpm/Packages/"))
+        -- If no <package> names are specified, we update all packages
+        this.updatePackages(exports("Utils.File").list("/mpm/Packages/"))
     end,
 
-    updateModules = function(modules)
-        for _, module in ipairs(modules) do
-            this.updateModule(module)
+    updatePackages = function(packages)
+        for _, package in ipairs(packages) do
+            this.updatePackage(package)
         end
         print("\nDone!\n")
     end,
 
-    updateModule = function(module)
-        print("- @" .. module)
-        local manifest = exports("Utils.PackageRepository").getModule(module)
-        for _, moduleName in ipairs(manifest.modules) do
-            this.updateFile(module, moduleName)
+    updatePackage = function(package)
+        print("- @" .. package)
+        local manifest = exports("Utils.PackageRepository").getPackage(package)
+        for _, file in ipairs(manifest.files) do
+            this.updateFile(package, file)
         end
 
-        -- this.removeFilesNotInList(module, manifest.modules)
+        -- this.removeFilesNotInList(package, manifest.files)
     end,
 
-    updateFile = function(module, filename)
+    updateFile = function(package, filename)
         -- Obtain the file from the repository
-        local content = exports("Utils.PackageRepository").downloadFile(module, filename)
-        local filepath = "/mpm/Packages/" .. module .. "/" .. filename
+        local content = exports("Utils.PackageRepository").downloadFile(package, filename)
+        local filepath = "/mpm/Packages/" .. package .. "/" .. filename
 
         -- If the file content is the same, return
         local installedContent = exports("Utils.File").get(filepath)
@@ -56,17 +56,17 @@ this = {
         end
 
         -- Replace the existing file with the new updated file
-        exports("Utils.File").put("/mpm/Packages/" .. module .. "/" .. filename, content)
+        exports("Utils.File").put("/mpm/Packages/" .. package .. "/" .. filename, content)
 
         -- Print the file name
         print("  - " .. filename)
     end,
 
-    removeFilesNotInList = function(module, modules)
-        local files = exports("Utils.File").list("/mpm/Packages/" .. module)
+    removeFilesNotInList = function(package, files)
+        local files = exports("Utils.File").list("/mpm/Packages/" .. package)
         for _, file in ipairs(files) do
-            if not this.isInList(file, modules) then
-                exports("Utils.File").delete("/mpm/Packages/" .. module .. "/" .. file)
+            if not this.isInList(file, files) then
+                exports("Utils.File").delete("/mpm/Packages/" .. package .. "/" .. file)
                 -- Print the file name with an X to indicate it is deleted
                 print("X - " .. file)
             end
