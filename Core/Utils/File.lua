@@ -25,9 +25,6 @@ File = {
     end,
     exists = function(path)
         local exists = fs.exists(path)
-        if not exists then
-            print("Error: File does not exist: " .. path)
-        end
         return exists
     end,
     list = function(path)

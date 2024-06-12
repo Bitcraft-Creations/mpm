@@ -1,6 +1,4 @@
-local this = nil
-local repositoryUrl = "https://shelfwood-mpm-packages.netlify.app/"
-local installModule = dofile("/mpm/Core/Commands/install.lua")
+local this
 
 --[[
     This command updates the specified module or all modules if no module is specified.
@@ -10,6 +8,7 @@ local installModule = dofile("/mpm/Core/Commands/install.lua")
     - Replace the existing module with the new module
     - For any modules that are no longer in the manifest, delete them
 ]]
+
 this = {
     usage = "mpm update <module>",
 
@@ -32,7 +31,7 @@ this = {
 
     updateModule = function(module)
         print("- @" .. module)
-        local manifest = textutils.unserialiseJSON(http.get(repositoryUrl .. module .. "/manifest.json").readAll())
+        local manifest = exports("Utils.ModuleRepository").getModule(module)
         for _, moduleName in ipairs(manifest.modules) do
             this.updateFile(module, moduleName)
         end
@@ -42,7 +41,7 @@ this = {
 
     updateFile = function(module, filename)
         -- Obtain the file from the repository
-        local content = http.get(repositoryUrl .. module .. "/" .. filename).readAll()
+        local content = exports("Utils.ModuleRepository").getFile(module, filename)
         local filepath = "/mpm/Packages/" .. module .. "/" .. filename
 
         -- If the file content is the same, return

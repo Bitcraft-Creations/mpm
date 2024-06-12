@@ -13,7 +13,7 @@ installModule = {
         end
 
         for _, name in ipairs(names) do
-            if exports("Utils.ModuleRepository").isInstalled(name) then
+            if exports("Utils.ModuleDisk").isInstalled(name) then
                 print("Module already installed. Did you mean `mpm update " .. name .. "`?")
                 goto nextModule
             end
@@ -40,7 +40,7 @@ installModule = {
 
     installPackage = function(module, package)
         print("- " .. package)
-        local file = exports("Utils.ModuleRepository").getPackage(module, package)
+        local file = exports("Utils.ModuleRepository").getFile(module, package)
         exports("Utils.File").put("/mpm/Packages/" .. module .. "/" .. package, file)
     end
 }
