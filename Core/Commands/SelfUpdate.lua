@@ -9,33 +9,37 @@ self_updateModule = {
     usage = "mpm self_update",
 
     run = function()
-        print("Updating MPM...")
         -- Get the manifest containing a list of files to check for updates
         local manifest = textutils.unserialiseJSON(http.get(repositoryUrl .. "manifest.json").readAll())
 
         for _, file in ipairs(manifest) do
+            print(file)
             -- We get the file from the repository and compare it to our local file (if one exists)
             local remoteFileContents = http.get(repositoryUrl .. file).readAll()
             local filePath = "/mpm/" .. file
-            local localFile = exports("Utils.File").open(filePath, "r")
+
+            -- If the file is 'mpm.lua', we compare it to `mpm.lua` instead of `mpm/mpm.lua`
+            if file == "mpm.lua" then
+                filePath = "mpm.lua"
+            end
+
+            local localFileContents = exports("Utils.File").get(filePath)
 
             -- If it's the same, we skip it
-            if localFile then
-                local localFileContents = localFile.readAll()
+            if localFileContents then
                 if remoteFileContents == localFileContents then
-                    localFile.close()
                     goto continue
                 end
-                localFile.close()
             end
+            print("- " .. file)
 
             if file == "mpm.lua" then
                 exports("Utils.File").delete("mpm.lua")
-                exports("Utils.File").open("mpm.lua", "w+").write(remoteFileContents)
+                exports("Utils.File").put("mpm.lua", remoteFileContents)
+                goto continue
             end
 
-            print("- " .. file)
-            exports("Utils.File").open(filePath, "w+").write(remoteFileContents)
+            exports("Utils.File").put(filePath, remoteFileContents)
             ::continue::
         end
     end
