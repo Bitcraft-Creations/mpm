@@ -2,46 +2,26 @@
 local installModule
 
 installModule = {
-    usage = "mpm install <module> <optional:module_2> etc.",
+    usage = "mpm install <package> <optional:module_2> etc.",
 
     run = function(...)
         local names = {...}
 
         if #names == 0 then
-            print("Please specify one or more modules to install.")
+            print("Please specify one or more packages to install.")
             return
         end
 
         for _, name in ipairs(names) do
-            if exports("Utils.ModuleDisk").isInstalled(name) then
-                print("Module already installed. Did you mean `mpm update " .. name .. "`?")
-                goto nextModule
+            if exports("Utils.PackageDisk").isInstalled(name) then
+                print("Package already installed. Did you mean `mpm update " .. name .. "`?")
+                goto nextPackage
             end
 
-            installModule.installModule(name)
+            exports("Utils.PackageDisk").install(name)
 
-            ::nextModule::
+            ::nextPackage::
         end
-    end,
-
-    installModule = function(name)
-        -- Construct the path to the module's manifest.json (similar to manifest.json)
-        local manifest = exports("Utils.ModuleRepository").getModule(name)
-        print("@" .. manifest.name)
-        print(manifest.description)
-
-        -- Install each package within the module
-        for _, packageName in ipairs(manifest.modules) do
-            installModule.installPackage(name, packageName)
-        end
-
-        print("Successfully installed @" .. name .. '!')
-    end,
-
-    installPackage = function(module, package)
-        print("- " .. package)
-        local file = exports("Utils.ModuleRepository").getFile(module, package)
-        exports("Utils.File").put("/mpm/Packages/" .. module .. "/" .. package, file)
     end
 }
 

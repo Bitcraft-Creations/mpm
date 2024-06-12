@@ -14,9 +14,12 @@ this = {
 
     run = function(...)
         local names = {...}
+        print("\nChecking for updates...\n")
         -- If <module> names are specified, we only update those modules
         if #names > 0 then
             this.updateModules(names)
+
+            return
         end
 
         -- If no <module> names are specified, we update all modules
@@ -27,11 +30,12 @@ this = {
         for _, module in ipairs(modules) do
             this.updateModule(module)
         end
+        print("\nDone!\n")
     end,
 
     updateModule = function(module)
         print("- @" .. module)
-        local manifest = exports("Utils.ModuleRepository").getModule(module)
+        local manifest = exports("Utils.PackageRepository").getModule(module)
         for _, moduleName in ipairs(manifest.modules) do
             this.updateFile(module, moduleName)
         end
@@ -41,7 +45,7 @@ this = {
 
     updateFile = function(module, filename)
         -- Obtain the file from the repository
-        local content = exports("Utils.ModuleRepository").getFile(module, filename)
+        local content = exports("Utils.PackageRepository").downloadFile(module, filename)
         local filepath = "/mpm/Packages/" .. module .. "/" .. filename
 
         -- If the file content is the same, return
