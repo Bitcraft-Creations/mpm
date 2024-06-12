@@ -43,9 +43,10 @@ this = {
     updateFile = function(module, filename)
         -- Obtain the file from the repository
         local content = http.get(repositoryUrl .. module .. "/" .. filename).readAll()
+        local filepath = "/mpm/Packages/" .. module .. "/" .. filename
 
         -- If the file content is the same, return
-        local installedContent = exports("Utils.File").get("/mpm/Packages/" .. module .. "/" .. filename)
+        local installedContent = exports("Utils.File").get(filepath)
 
         if installedContent == content then
             return
