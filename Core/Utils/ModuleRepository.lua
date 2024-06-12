@@ -1,8 +1,10 @@
--- The `ModuleRepository` module contains helpers to get code from the module repository.
-local File = dofile("/mpm/Core/Utils/file.lua")
-local packageRepository = "https://shelfwood-mpm-packages.netlify.app/"
-
 local ModuleRepository
+
+--[[
+    The `ModuleRepository` module contains helpers to get code from the module repository.
+]]
+
+local packageRepository = "https://shelfwood-mpm-packages.netlify.app/"
 
 ModuleRepository = {
     getModule = function(name)
@@ -19,8 +21,8 @@ ModuleRepository = {
 
         return manifest
     end,
-    getPackage = function(module, package)
-        local response = http.get(packageRepository .. module .. "/" .. package)
+    getFile = function(module, filename)
+        local response = http.get(packageRepository .. module .. "/" .. filename)
 
         local content = response.readAll()
         response.close()
@@ -30,9 +32,6 @@ ModuleRepository = {
         end
 
         return content
-    end,
-    isInstalled = function(module)
-        return File.exists("/mpm/Packages/" .. module)
     end
 }
 
