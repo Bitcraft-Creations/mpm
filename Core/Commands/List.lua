@@ -4,12 +4,17 @@ listModule = {
     usage = "mpm list",
 
     run = function()
-        print("\nListing installed packages:")
         local files = exports("Utils.File").list("/mpm/Packages/")
+        if #files == 0 then
+            print("No packages installed.")
+            return
+        end
+        print("\nListing installed packages:\n")
+
         for _, file in ipairs(files) do
             print("  - " .. file)
         end
-    end,
+    end
 }
 
 return listModule
