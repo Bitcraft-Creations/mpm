@@ -9,6 +9,6 @@
   "Core/Commands/Startup.lua",
   "Core/Commands/Update.lua",
   "Core/Utils/File.lua",
-  "Core/Utils/ModuleRepository.lua",
-  "Core/Utils/ModuleDisk.lua"
+  "Core/Utils/PackageRepository.lua",
+  "Core/Utils/PackageDisk.lua"
 ]
