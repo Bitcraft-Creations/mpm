@@ -39,15 +39,25 @@ bootstrapModule = {
             return
         end
 
-        -- Capitalize the first letter of the command so it matches the file name (e.g. "install" -> "Install")
-        command = command:sub(1, 1):upper() .. command:sub(2)
+        -- Convert command to lowercase for case-insensitive matching
+        local commandLower = command:lower()
+        local files = fs.list("/mpm/Core/Commands/")
+        local matchedFile = nil
 
-        local commandPath = string.format("/mpm/Core/Commands/%s.lua", command)
+        for _, file in ipairs(files) do
+            print(file, file:lower())
+            -- Remove .lua and match it with the command
+            if file:find(".lua") and file:sub(1, -5):lower() == commandLower then
+                matchedFile = file
+                break
+            end
+        end
 
-        if not fs.exists(commandPath) then
+        if not matchedFile then
             error("Error: Command does not exist.")
         end
 
+        local commandPath = string.format("/mpm/Core/Commands/%s", matchedFile)
         local module = dofile(commandPath)
 
         if module and module.run then
