@@ -45,7 +45,6 @@ bootstrapModule = {
         local matchedFile = nil
 
         for _, file in ipairs(files) do
-            print(file, file:lower())
             -- Remove .lua and match it with the command
             if file:find(".lua") and file:sub(1, -5):lower() == commandLower then
                 matchedFile = file
