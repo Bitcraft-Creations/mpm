@@ -3,7 +3,7 @@ local modules = {}
 
 function exports(moduleNamespace)
     local modulePath = string.format("/mpm/Core/%s.lua", moduleNamespace:gsub("%.", "/"))
-    
+
     if not fs.exists(modulePath) then
         error("The util " .. moduleNamespace .. " does not exist.")
     end
@@ -38,6 +38,9 @@ bootstrapModule = {
             bootstrapModule.printUsage()
             return
         end
+
+        -- Capitalize the first letter of the command so it matches the file name (e.g. "install" -> "Install")
+        command = command:sub(1, 1):upper() .. command:sub(2)
 
         local commandPath = string.format("/mpm/Core/Commands/%s.lua", command)
 
