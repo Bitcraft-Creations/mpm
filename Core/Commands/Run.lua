@@ -1,7 +1,11 @@
 local runModule = nil
 
 function mpm(package)
-    local path = "/mpm/Packages/" .. package .. ".lua"
+    local path = "/mpm/Packages/" .. package
+
+    if not package:match("%.lua$") then
+        path = path .. ".lua"
+    end
 
     if exports("Utils.File").exists(path) then
         return dofile(path)
