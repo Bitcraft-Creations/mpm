@@ -20,7 +20,7 @@ this = {
         print(manifest.description)
 
         -- Save the manifest to the package directory
-        exports("Utils.File").put(packageDirectory .. name .. "/manifest.json", textutils.serialize(manifest))
+        exports("Utils.File").put(packageDirectory .. name .. "/manifest.json", textutils.serializeJSON(manifest))
 
         -- Install each file within the package
         for _, file in ipairs(manifest.files) do
