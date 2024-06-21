@@ -13,16 +13,22 @@ startupModule = {
         local parameters = read()
 
         -- Construct the startup script content
-        local startup_content = "shell.run('mpm update')\n"
-        startup_content = startup_content .. "shell.run('mpm run " .. package .. " " .. parameters .. "')"
+        local startup_content = [[
+print("Press Enter to start the mpm update, or type 'cancel' to abort:")
+local input = read()
+if input == "cancel" then
+    print("Startup script aborted.")
+    return
+end
+shell.run('mpm update')
+shell.run('mpm run ]] .. package .. " " .. parameters .. [[')
+]]
 
         -- Write the startup script content to startup.lua
-        local file = exports("Utils.File").open("./startup.lua", "w")
-        file.write(startup_content)
-        file.close()
+        exports("Utils.File").put("./startup.lua", startup_content)
 
         print("Startup script set successfully!")
-    end,
+    end
 }
 
 return startupModule
