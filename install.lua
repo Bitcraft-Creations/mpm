@@ -13,6 +13,7 @@ local function downloadFile(url, path)
     else
         print("x " .. path)
     end
+    response.close()
 end
 
 -- Create the /mpm directory if it doesn't exist
@@ -25,7 +26,11 @@ if not fs.exists("/mpm/Packages") then
     fs.makeDir("/mpm/Packages")
 end
 
-local manifest = textutils.unserialiseJSON(http.get(mpm_repository_url .. "manifest.json").readAll())
+local response = http.get(mpm_repository_url .. "manifest.json")
+local content = response.readAll()
+response.close()
+
+local manifest = textutils.unserialiseJSON(content)
 
 -- Download each file in the manifest
 
