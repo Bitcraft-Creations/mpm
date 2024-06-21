@@ -56,7 +56,7 @@ this = {
         end
 
         -- Replace the existing file with the new updated file
-        exports("Utils.File").put("/mpm/Packages/" .. package .. "/" .. filename, content)
+        exports("Utils.File").put(filepath, content)
 
         -- Print the file name
         print("  - " .. filename)

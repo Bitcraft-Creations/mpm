@@ -33,8 +33,9 @@ this = {
         print("- " .. file)
 
         local content = exports("Utils.PackageRepository").downloadFile(package, file)
+        local filePath = packageDirectory .. package .. "/" .. file
 
-        exports("Utils.File").put(packageDirectory .. package .. "/" .. file, content)
+        exports("Utils.File").put(filePath, content)
     end,
     remove = function(package)
         exports("Utils.File").delete(packageDirectory .. package)

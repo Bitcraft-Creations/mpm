@@ -33,6 +33,7 @@ self_updateModule = {
     end,
 
     getFileContents = function(file)
+        print("Getting file contents for " .. file)
         return http.get(repositoryUrl .. file).readAll()
     end,
 

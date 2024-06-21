@@ -1,8 +1,8 @@
 -- The `File` module contains helpers to read and write to files.
 -- It uses computercraft's `fs` module to read and write to files.
-local File
+local this
 
-File = {
+this = {
     get = function(path)
         local file = fs.open(path, "r")
         if not file then
@@ -13,6 +13,12 @@ File = {
         return content
     end,
     put = function(path, content)
+        -- Ensure the directory exists
+        local dirPath = fs.getDir(path)
+        if not fs.exists(dirPath) then
+            fs.makeDir(dirPath)
+        end
+
         -- Check if the file exists, if not create it
         local file = fs.open(path, "w")
         if not file then
@@ -63,7 +69,7 @@ File = {
         response.close()
 
         -- Save the content to the specified path
-        local success = File.put(path, content)
+        local success = this.put(path, content)
         if not success then
             print("Error: Unable to save downloaded content to file: " .. path)
             return false
@@ -73,4 +79,4 @@ File = {
     end
 }
 
-return File
+return this
