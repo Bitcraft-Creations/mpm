@@ -29,12 +29,17 @@ self_updateModule = {
     end,
 
     getManifest = function()
-        return textutils.unserialiseJSON(http.get(repositoryUrl .. "manifest.json").readAll())
+        local response = http.get(repositoryUrl .. "manifest.json")
+        local content = response.readAll()
+        response.close()
+        return textutils.unserialiseJSON(content)
     end,
 
     getFileContents = function(file)
-        print("Getting file contents for " .. file)
-        return http.get(repositoryUrl .. file).readAll()
+        local response = http.get(repositoryUrl .. file)
+        local content = response.readAll()
+        response.close()
+        return content
     end,
 
     updateFile = function(file, remoteFileContents)
