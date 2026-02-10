@@ -14,12 +14,6 @@ startupModule = {
 
         -- Construct the startup script content
         local startup_content = [[
-print("Press Enter to start the mpm update, or type 'cancel' to abort:")
-local input = read()
-if input == "cancel" then
-    print("Startup script aborted.")
-    return
-end
 shell.run('mpm update')
 shell.run('mpm run ]] .. package .. " " .. parameters .. [[')
 ]]

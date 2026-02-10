@@ -18,7 +18,7 @@ runModule = {
     usage = "mpm run <package>",
 
     run = function(package)
-        local package_path = "/mpm/Packages/" .. package .. ".lua"
+        local package_path = "/mpm/Packages/" .. package .. "/start.lua"
 
         if not exports("Utils.File").exists(package_path) then
             error("Package '" .. package .. "' not found.")
