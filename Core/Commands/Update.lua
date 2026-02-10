@@ -36,6 +36,20 @@ this = {
     updatePackage = function(package)
         print("- @" .. package)
         local manifest = exports("Utils.PackageRepository").getPackage(package)
+
+        -- Install any missing dependencies
+        if manifest.dependencies then
+            for _, dep in ipairs(manifest.dependencies) do
+                if not exports("Utils.PackageDisk").isInstalled(dep) then
+                    print("\nInstalling missing dependency: " .. dep)
+                    exports("Utils.PackageDisk").install(dep)
+                end
+            end
+        end
+
+        -- Update manifest file
+        exports("Utils.File").put("/mpm/Packages/" .. package .. "/manifest.json", textutils.serializeJSON(manifest))
+
         for _, file in ipairs(manifest.files) do
             this.updateFile(package, file)
         end
