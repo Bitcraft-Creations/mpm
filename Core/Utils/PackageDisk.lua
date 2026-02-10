@@ -8,6 +8,7 @@ local this = nil
     - manifest.name
     - manifest.description
     - manifest.files (a table of strings representing files to download)
+    - manifest.dependencies (optional: a table of package names to install first)
 ]]
 local repositoryUrl = "https://shelfwood-mpm-packages.netlify.app/"
 local packageDirectory = "/mpm/Packages/"
@@ -18,6 +19,16 @@ this = {
         local manifest = exports("Utils.PackageRepository").getPackage(name)
         print("\n@" .. manifest.name .. "\n")
         print(manifest.description)
+
+        -- Install dependencies first
+        if manifest.dependencies then
+            for _, dep in ipairs(manifest.dependencies) do
+                if not this.isInstalled(dep) then
+                    print("\nInstalling dependency: " .. dep)
+                    this.install(dep)
+                end
+            end
+        end
 
         -- Save the manifest to the package directory
         exports("Utils.File").put(packageDirectory .. name .. "/manifest.json", textutils.serializeJSON(manifest))
