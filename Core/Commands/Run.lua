@@ -65,13 +65,26 @@ runModule = {
             end
         end
 
-        -- Pass additional arguments to the script
+        -- Load and run script with arguments
+        -- We use loadfile + custom environment to pass args while preserving mpm()
         local args = {...}
-        if #args > 0 then
-            dofile(package_path, table.unpack(args))
-        else
-            dofile(package_path)
+
+        local fn, err = loadfile(package_path)
+        if not fn then
+            print("Error loading package: " .. tostring(err))
+            return
         end
+
+        -- Create environment with mpm function and standard globals
+        local env = setmetatable({
+            mpm = mpm,
+            exports = exports
+        }, { __index = _G })
+
+        setfenv(fn, env)
+
+        -- Run with arguments
+        fn(table.unpack(args))
     end
 }
 
