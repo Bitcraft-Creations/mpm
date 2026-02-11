@@ -40,10 +40,10 @@ mpm help [cmd]         Show help
 mpm intro                    # Interactive tutorial
 # or manually:
 mpm list remote              # See packages
-mpm search display           # Search packages
-mpm install displays         # Install
-mpm run displays             # Run
-mpm startup displays         # Set as boot
+mpm search shelfos           # Search packages
+mpm install shelfos          # Install
+mpm run shelfos              # Run
+mpm startup shelfos          # Set as boot
 ```
 
 ## Taps

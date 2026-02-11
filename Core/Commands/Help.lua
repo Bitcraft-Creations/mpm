@@ -40,7 +40,7 @@ helpModule = {
         run = {
             usage = "mpm run <pkg> [args]",
             desc = "Run a package or script",
-            examples = {"mpm run displays", "mpm run tools/inspect_peripheral"}
+            examples = {"mpm run shelfos", "mpm run tools/inspect_peripheral"}
         },
         info = {
             usage = "mpm info <pkg>",
@@ -60,7 +60,7 @@ helpModule = {
         startup = {
             usage = "mpm startup [pkg] | --show | --clear",
             desc = "Configure package to run on boot",
-            examples = {"mpm startup displays", "mpm startup --show"}
+            examples = {"mpm startup shelfos", "mpm startup --show"}
         },
         reset = {
             usage = "mpm reset [--hard]",

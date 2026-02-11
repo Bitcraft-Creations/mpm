@@ -96,12 +96,13 @@ introModule = {
         print("")
         print("Let's install some packages!")
         print("")
-        print("The 'displays' package lets you show")
-        print("information on monitors (AE2 storage, etc.)")
+        print("The 'shelfos' package is the Base Information")
+        print("System with multi-monitor management, touch")
+        print("config, and pocket integration.")
         print("")
-        print("It depends on: views, utils, peripherals")
+        print("It depends on: views, utils, peripherals, ui, net")
         print("")
-        print("Install displays package? (y/n)")
+        print("Install shelfos package? (y/n)")
 
         local install = read()
         if install:lower() == "y" then
@@ -109,13 +110,13 @@ introModule = {
             print("Installing...")
             print("")
 
-            -- Install displays (will auto-install deps)
-            local success = PackageDisk.install("displays")
+            -- Install shelfos (will auto-install deps)
+            local success = PackageDisk.install("shelfos")
 
             if success then
-                table.insert(actions.packagesInstalled, "displays")
+                table.insert(actions.packagesInstalled, "shelfos")
                 -- Track deps too
-                for _, dep in ipairs({"views", "utils", "peripherals"}) do
+                for _, dep in ipairs({"views", "utils", "peripherals", "ui", "net"}) do
                     if PackageDisk.isInstalled(dep) then
                         table.insert(actions.packagesInstalled, dep)
                     end
@@ -136,25 +137,25 @@ introModule = {
             print("You have packages installed!")
             print("")
             print("Run a package with:")
-            print("  mpm run displays")
+            print("  mpm run shelfos")
             print("")
             print("Run a specific script:")
             print("  mpm run tools/inspect_peripheral")
             print("")
-            print("Would you like to run 'displays' now? (y/n)")
-            print("(This will start the display setup wizard)")
+            print("Would you like to run 'shelfos' now? (y/n)")
+            print("(This will start the ShelfOS setup wizard)")
 
             local runIt = read()
             if runIt:lower() == "y" then
                 print("")
-                print("Starting displays...")
+                print("Starting ShelfOS...")
                 print("(Exit with Ctrl+T when done)")
                 print("")
                 sleep(1)
 
-                -- Run the displays package
+                -- Run the shelfos package
                 local ok, err = pcall(function()
-                    dofile("/mpm/Packages/displays/start.lua")
+                    dofile("/mpm/Packages/shelfos/start.lua")
                 end)
 
                 if not ok then
@@ -191,15 +192,15 @@ introModule = {
         print("")
 
         if #actions.packagesInstalled > 0 then
-            print("Set 'displays' as startup? (y/n)")
+            print("Set 'shelfos' as startup? (y/n)")
 
             local setStartup = read()
             if setStartup:lower() == "y" then
-                StartupConfig.configure("displays", "")
+                StartupConfig.configure("shelfos", "")
                 actions.startupConfigured = true
                 print("")
                 print("[+] Startup configured!")
-                print("    This computer will run 'displays' on boot.")
+                print("    This computer will run 'shelfos' on boot.")
             end
         else
             print("Install a package first, then run:")
@@ -249,7 +250,7 @@ introModule = {
 
         print("")
         if actions.startupConfigured then
-            print("  Startup: displays")
+            print("  Startup: shelfos")
         else
             print("  Startup: not configured")
         end
