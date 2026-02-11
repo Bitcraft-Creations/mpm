@@ -88,7 +88,7 @@ createTaps()
 
 print("")
 if fail > 0 then
-    print("[!] " .. fail .. " files failed - run 'mpm self_update'")
+    print("[!] " .. fail .. " files failed - run 'mpm selfupdate'")
 else
     print("[+] Installed successfully!")
 end

@@ -185,7 +185,7 @@ introModule = {
         print("when this computer boots.")
         print("")
         print("On boot, MPM will:")
-        print("  1. Update itself (mpm self_update)")
+        print("  1. Update itself (mpm selfupdate)")
         print("  2. Update packages (mpm update)")
         print("  3. Run your startup package")
         print("")

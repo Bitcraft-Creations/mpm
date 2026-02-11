@@ -14,7 +14,7 @@ local repositoryUrl = "https://shelfwood-mpm.netlify.app/"
     4. Regenerate startup.lua from startup.config if configured
 ]]
 selfUpdateModule = {
-    usage = "mpm self_update",
+    usage = "mpm selfupdate",
 
     run = function()
         local Validation = exports("Utils.Validation")

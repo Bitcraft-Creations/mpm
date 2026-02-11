@@ -67,10 +67,10 @@ helpModule = {
             desc = "Remove all packages. --hard also resets taps",
             examples = {"mpm reset", "mpm reset --hard"}
         },
-        self_update = {
-            usage = "mpm self_update",
+        selfupdate = {
+            usage = "mpm selfupdate",
             desc = "Update MPM to latest version",
-            examples = {"mpm self_update"}
+            examples = {"mpm selfupdate"}
         },
         uninstall = {
             usage = "mpm uninstall",
@@ -125,7 +125,7 @@ helpModule = {
         print("System:")
         print("  startup [pkg]    Set boot package")
         print("  reset [--hard]   Clear packages")
-        print("  self_update      Update MPM")
+        print("  selfupdate       Update MPM")
         print("  doctor           Check health")
         print("  intro            Tutorial")
         print("")

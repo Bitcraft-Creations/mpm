@@ -30,7 +30,7 @@ mpm startup [pkg]      Set boot package
 mpm tap <url>          Add repository
 mpm reset [--hard]     Clear packages
 mpm doctor             Check health
-mpm self_update        Update MPM
+mpm selfupdate        Update MPM
 mpm help [cmd]         Show help
 ```
 
@@ -62,7 +62,7 @@ mpm install tap/package      # From specific tap
 mpm doctor                   # Check health
 mpm reset                    # Clear packages
 mpm reset --hard             # Full reset (taps too)
-mpm self_update              # Update MPM
+mpm selfupdate              # Update MPM
 ```
 
 ## Package Structure

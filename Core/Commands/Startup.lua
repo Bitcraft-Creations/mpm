@@ -113,7 +113,7 @@ startupModule = {
             end
             print("")
             print("On boot, the computer will:")
-            print("  1. Update MPM (mpm self_update)")
+            print("  1. Update MPM (mpm selfupdate)")
             print("  2. Update packages (mpm update)")
             print("  3. Run: mpm run " .. package .. (parameters ~= "" and " " .. parameters or ""))
             print("")
@@ -195,7 +195,7 @@ startupModule = {
             end
             print("")
             print("On boot sequence:")
-            print("  1. mpm self_update")
+            print("  1. mpm selfupdate")
             print("  2. mpm update")
             print("  3. mpm run " .. (config.package or "?") .. (config.parameters ~= "" and " " .. config.parameters or ""))
         end

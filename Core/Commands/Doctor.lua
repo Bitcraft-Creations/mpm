@@ -55,7 +55,7 @@ doctorModule = {
                 table.insert(issues, "Invalid taps.json format")
             end
         else
-            table.insert(issues, "Missing taps.json - run 'mpm self_update'")
+            table.insert(issues, "Missing taps.json - run 'mpm selfupdate'")
         end
 
         -- Check 3: Packages directory
@@ -142,7 +142,7 @@ doctorModule = {
 
             print("Fixes:")
             if #issues > 0 then
-                print("  mpm self_update    Reinstall core files")
+                print("  mpm selfupdate    Reinstall core files")
             end
             print("  mpm reset --hard   Full reset")
         end

@@ -32,7 +32,7 @@ bootstrapModule = {
         print("  info <pkg>       Package details")
         print("  tap <source>     Add repository")
         print("  startup [pkg]    Configure startup")
-        print("  self_update      Update MPM")
+        print("  selfupdate       Update MPM")
         print("  help [cmd]       Show help")
         print("")
         print("Run 'mpm help <command>' for details")

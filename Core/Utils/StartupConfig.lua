@@ -6,7 +6,7 @@
     - parameters: Optional arguments to pass
     - version: Config schema version for future migrations
 
-    When mpm self_update runs, it regenerates startup.lua from this config,
+    When mpm selfupdate runs, it regenerates startup.lua from this config,
     ensuring the startup script stays current with MPM updates.
 ]]
 local StartupConfig = nil
@@ -84,7 +84,7 @@ StartupConfig = {
 -- Regenerate with: mpm startup --refresh
 
 -- Update MPM itself first
-shell.run('mpm self_update')
+shell.run('mpm selfupdate')
 
 -- Update installed packages
 shell.run('mpm update')
