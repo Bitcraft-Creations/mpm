@@ -22,10 +22,20 @@ helpModule = {
             desc = "Update packages (all if none specified)",
             examples = {"mpm update", "mpm update tools"}
         },
+        upgrade = {
+            usage = "mpm upgrade [pkg...]",
+            desc = "Alias for update",
+            examples = {"mpm upgrade"}
+        },
         list = {
             usage = "mpm list [remote]",
             desc = "List installed or available packages",
             examples = {"mpm list", "mpm list remote"}
+        },
+        search = {
+            usage = "mpm search <query>",
+            desc = "Search packages by name or description",
+            examples = {"mpm search display", "mpm search ae2"}
         },
         run = {
             usage = "mpm run <pkg> [args]",
@@ -52,6 +62,11 @@ helpModule = {
             desc = "Configure package to run on boot",
             examples = {"mpm startup displays", "mpm startup --show"}
         },
+        reset = {
+            usage = "mpm reset [--hard]",
+            desc = "Remove all packages. --hard also resets taps",
+            examples = {"mpm reset", "mpm reset --hard"}
+        },
         self_update = {
             usage = "mpm self_update",
             desc = "Update MPM to latest version",
@@ -62,15 +77,20 @@ helpModule = {
             desc = "Remove MPM and all packages",
             examples = {"mpm uninstall"}
         },
-        help = {
-            usage = "mpm help [command]",
-            desc = "Show help for commands",
-            examples = {"mpm help", "mpm help tap"}
+        doctor = {
+            usage = "mpm doctor",
+            desc = "Check MPM health and diagnose issues",
+            examples = {"mpm doctor"}
         },
         intro = {
             usage = "mpm intro",
             desc = "Interactive tutorial for new users",
             examples = {"mpm intro"}
+        },
+        help = {
+            usage = "mpm help [command]",
+            desc = "Show help for commands",
+            examples = {"mpm help", "mpm help tap"}
         }
     },
 
@@ -92,6 +112,7 @@ helpModule = {
         print("  install <pkg>    Install packages")
         print("  remove <pkg>     Remove packages")
         print("  update [pkg]     Update packages")
+        print("  search <query>   Search packages")
         print("  list [remote]    List packages")
         print("  info <pkg>       Package details")
         print("  run <pkg>        Run package")
@@ -103,8 +124,10 @@ helpModule = {
         print("")
         print("System:")
         print("  startup [pkg]    Set boot package")
+        print("  reset [--hard]   Clear packages")
         print("  self_update      Update MPM")
-        print("  uninstall        Remove MPM")
+        print("  doctor           Check health")
+        print("  intro            Tutorial")
         print("")
         print("mpm help <command> for details")
     end,
