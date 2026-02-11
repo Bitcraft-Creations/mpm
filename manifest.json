@@ -18,5 +18,6 @@
   "Core/Utils/PackageRepository.lua",
   "Core/Utils/StartupConfig.lua",
   "Core/Utils/TapRegistry.lua",
+  "Core/Utils/UI.lua",
   "Core/Utils/Validation.lua"
 ]

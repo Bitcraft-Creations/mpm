@@ -1,220 +1,131 @@
 --[[
     Help command: mpm help [command]
-
-    Displays help information for MPM commands.
 ]]
 local helpModule = nil
 
 helpModule = {
     usage = "mpm help [command]",
 
-    -- Detailed help for each command
     commands = {
         install = {
-            usage = "mpm install <package> [package2] ...",
-            description = "Install packages from configured taps.",
-            examples = {
-                "mpm install tools",
-                "mpm install views displays utils",
-                "mpm install mytap/custom-package"
-            },
-            notes = {
-                "Use tap/package syntax to install from specific tap"
-            }
+            usage = "mpm install <pkg> [pkg2...]",
+            desc = "Install packages from configured taps",
+            examples = {"mpm install tools", "mpm install mytap/pkg"}
         },
         remove = {
-            usage = "mpm remove <package> [package2] ...",
-            description = "Remove installed packages.",
-            examples = {
-                "mpm remove tools",
-                "mpm remove views displays"
-            }
+            usage = "mpm remove <pkg> [pkg2...]",
+            desc = "Remove installed packages",
+            examples = {"mpm remove tools"}
         },
         update = {
-            usage = "mpm update [package] [package2] ...",
-            description = "Update packages. Updates all if none specified.",
-            examples = {
-                "mpm update",
-                "mpm update tools"
-            }
+            usage = "mpm update [pkg...]",
+            desc = "Update packages (all if none specified)",
+            examples = {"mpm update", "mpm update tools"}
         },
         list = {
-            usage = "mpm list [local|remote]",
-            description = "List installed packages (default) or available packages from all taps.",
-            examples = {
-                "mpm list",
-                "mpm list remote"
-            }
+            usage = "mpm list [remote]",
+            desc = "List installed or available packages",
+            examples = {"mpm list", "mpm list remote"}
         },
         run = {
-            usage = "mpm run <package> [args...]",
-            description = "Run a package's start.lua or a specific script.",
-            examples = {
-                "mpm run displays",
-                "mpm run tools/inspect_peripheral"
-            }
+            usage = "mpm run <pkg> [args]",
+            desc = "Run a package or script",
+            examples = {"mpm run displays", "mpm run tools/inspect_peripheral"}
         },
-        startup = {
-            usage = "mpm startup [package] [args...] | --refresh | --clear | --show",
-            description = "Configure a package to run on computer boot.",
-            options = {
-                "<package>  - Set the startup package",
-                "--show     - Display current configuration",
-                "--refresh  - Regenerate startup.lua from config",
-                "--clear    - Remove startup configuration"
-            },
-            examples = {
-                "mpm startup displays",
-                "mpm startup --show",
-                "mpm startup --refresh",
-                "mpm startup --clear"
-            },
-            notes = {
-                "On boot: runs self_update, then update, then your package",
-                "Config stored in /startup.config for persistence"
-            }
+        info = {
+            usage = "mpm info <pkg>",
+            desc = "Show package details",
+            examples = {"mpm info tools"}
         },
         tap = {
-            usage = "mpm tap <source> | --list | --remove <name> | --default <name>",
-            description = "Manage package repository sources (taps).",
-            options = {
-                "<source>        - Add a new tap",
-                "--list          - List all configured taps",
-                "--remove <name> - Remove a tap",
-                "--default <name>- Set default tap"
-            },
-            examples = {
-                "mpm tap j-shelfwood/mpm-packages",
-                "mpm tap https://my-packages.netlify.app/",
-                "mpm tap --list",
-                "mpm tap --remove mytap",
-                "mpm tap --default mytap"
-            },
-            notes = {
-                "GitHub shorthand: user/repo (prompts for hosting URL)",
-                "Direct URL: https://packages.example.com/"
-            }
+            usage = "mpm tap <source> | --list | --remove <name>",
+            desc = "Manage package repositories",
+            examples = {"mpm tap https://pkg.example.com/", "mpm tap --list"}
         },
         untap = {
             usage = "mpm untap <name>",
-            description = "Remove a tap. Alias for: mpm tap --remove <name>",
-            examples = {
-                "mpm untap mytap"
-            }
+            desc = "Remove a tap",
+            examples = {"mpm untap mytap"}
+        },
+        startup = {
+            usage = "mpm startup [pkg] | --show | --clear",
+            desc = "Configure package to run on boot",
+            examples = {"mpm startup displays", "mpm startup --show"}
         },
         self_update = {
             usage = "mpm self_update",
-            description = "Update MPM itself. Also refreshes startup.lua if configured.",
-            examples = {
-                "mpm self_update"
-            }
-        },
-        info = {
-            usage = "mpm info <package>",
-            description = "Display detailed information about a package.",
-            examples = {
-                "mpm info tools",
-                "mpm info mytap/package"
-            }
+            desc = "Update MPM to latest version",
+            examples = {"mpm self_update"}
         },
         uninstall = {
             usage = "mpm uninstall",
-            description = "Completely remove MPM and all packages.",
-            examples = {
-                "mpm uninstall"
-            }
+            desc = "Remove MPM and all packages",
+            examples = {"mpm uninstall"}
         },
         help = {
             usage = "mpm help [command]",
-            description = "Display this help or help for a specific command.",
-            examples = {
-                "mpm help",
-                "mpm help tap"
-            }
+            desc = "Show help for commands",
+            examples = {"mpm help", "mpm help tap"}
         }
     },
 
-    run = function(command)
-        if command then
-            helpModule.showCommandHelp(command:lower())
+    run = function(cmd)
+        if cmd then
+            helpModule.showCommand(cmd:lower())
         else
-            helpModule.showOverview()
+            helpModule.showAll()
         end
     end,
 
-    showOverview = function()
+    showAll = function()
+        local UI = exports("Utils.UI")
+        UI.printBanner()
+
+        print("Usage: mpm <command> [args]")
         print("")
-        print("MPM - Minecraft Package Manager")
-        print("================================")
-        print("")
-        print("Usage: mpm <command> [arguments]")
-        print("")
-        print("Package Management:")
-        print("  install <pkg>       Install a package")
-        print("  remove <pkg>        Remove a package")
-        print("  update [pkg]        Update packages")
-        print("  list [local|remote] List packages")
-        print("  info <pkg>          Package information")
-        print("")
-        print("Running:")
-        print("  run <pkg>           Run a package")
-        print("  startup [pkg]       Set startup package")
+        print("Packages:")
+        print("  install <pkg>    Install packages")
+        print("  remove <pkg>     Remove packages")
+        print("  update [pkg]     Update packages")
+        print("  list [remote]    List packages")
+        print("  info <pkg>       Package details")
+        print("  run <pkg>        Run package")
         print("")
         print("Repository:")
-        print("  tap <source>        Add a tap")
-        print("  tap --list          List taps")
-        print("  untap <name>        Remove a tap")
+        print("  tap <source>     Add tap")
+        print("  tap --list       List taps")
+        print("  untap <name>     Remove tap")
         print("")
         print("System:")
-        print("  self_update         Update MPM")
-        print("  uninstall           Remove MPM")
-        print("  help [cmd]          Show help")
+        print("  startup [pkg]    Set boot package")
+        print("  self_update      Update MPM")
+        print("  uninstall        Remove MPM")
         print("")
-        print("Run 'mpm help <command>' for details.")
-        print("")
+        print("mpm help <command> for details")
     end,
 
-    showCommandHelp = function(command)
-        local cmd = helpModule.commands[command]
-
-        if not cmd then
+    showCommand = function(cmd)
+        local c = helpModule.commands[cmd]
+        if not c then
             print("")
-            print("Unknown command: " .. command)
-            print("")
-            print("Run 'mpm help' for available commands.")
-            print("")
+            print("[!] Unknown: " .. cmd)
+            print("Run 'mpm help' for commands")
             return
         end
 
         print("")
-        print(cmd.usage)
+        print(c.usage)
         print("")
-        print(cmd.description)
-        print("")
+        print(c.desc)
 
-        if cmd.options and #cmd.options > 0 then
-            print("Options:")
-            for _, option in ipairs(cmd.options) do
-                print("  " .. option)
-            end
+        if c.examples and #c.examples > 0 then
             print("")
-        end
-
-        if cmd.examples and #cmd.examples > 0 then
             print("Examples:")
-            for _, example in ipairs(cmd.examples) do
-                print("  " .. example)
+            for _, ex in ipairs(c.examples) do
+                print("  " .. ex)
             end
-            print("")
         end
-
-        if cmd.notes and #cmd.notes > 0 then
-            print("Notes:")
-            for _, note in ipairs(cmd.notes) do
-                print("  - " .. note)
-            end
-            print("")
-        end
+        print("")
     end
 }
 

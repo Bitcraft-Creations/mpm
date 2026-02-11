@@ -5,7 +5,7 @@ function exports(moduleNamespace)
     local modulePath = string.format("/mpm/Core/%s.lua", moduleNamespace:gsub("%.", "/"))
 
     if not fs.exists(modulePath) then
-        error("The util " .. moduleNamespace .. " does not exist.")
+        error("Module " .. moduleNamespace .. " not found")
     end
 
     if not modules[moduleNamespace] then
@@ -17,18 +17,25 @@ end
 
 bootstrapModule = {
     printUsage = function()
-        print("Usage:")
+        local UI = exports("Utils.UI")
 
-        local files = fs.list("/mpm/Core/Commands/")
+        UI.printBanner()
 
-        for _, file in ipairs(files) do
-            if not file:find(".lua") then
-                return
-            end
-
-            local module = dofile("/mpm/Core/Commands/" .. file)
-            print(module.usage or "No usage specified.")
-        end
+        print("Usage: mpm <command> [args]")
+        print("")
+        print("Commands:")
+        print("  install <pkg>    Install packages")
+        print("  remove <pkg>     Remove packages")
+        print("  update [pkg]     Update packages")
+        print("  run <pkg>        Run a package")
+        print("  list [remote]    List packages")
+        print("  info <pkg>       Package details")
+        print("  tap <source>     Add repository")
+        print("  startup [pkg]    Configure startup")
+        print("  self_update      Update MPM")
+        print("  help [cmd]       Show help")
+        print("")
+        print("Run 'mpm help <command>' for details")
     end,
 
     handleCommand = function(tArgs)
@@ -39,13 +46,11 @@ bootstrapModule = {
             return
         end
 
-        -- Convert command to lowercase for case-insensitive matching
         local commandLower = command:lower()
         local files = fs.list("/mpm/Core/Commands/")
         local matchedFile = nil
 
         for _, file in ipairs(files) do
-            -- Remove .lua and match it with the command
             if file:find(".lua") and file:sub(1, -5):lower() == commandLower then
                 matchedFile = file
                 break
@@ -53,7 +58,11 @@ bootstrapModule = {
         end
 
         if not matchedFile then
-            error("Error: Command does not exist.")
+            print("")
+            print("[!] Unknown command: " .. command)
+            print("")
+            print("Run 'mpm help' for available commands")
+            return
         end
 
         local commandPath = string.format("/mpm/Core/Commands/%s", matchedFile)
@@ -63,7 +72,7 @@ bootstrapModule = {
             return module.run(table.unpack(tArgs, 2))
         end
 
-        error("Error: Command module is not properly defined.")
+        print("[!] Command module error")
     end
 }
 

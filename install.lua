@@ -1,173 +1,101 @@
 --[[
     MPM Installer
-
-    Run with: wget run https://shelfwood-mpm.netlify.app/install.lua
-
-    This script downloads and installs MPM (Minecraft Package Manager)
-    on a CC:Tweaked computer.
+    wget run https://shelfwood-mpm.netlify.app/install.lua
 ]]
 
-local mpm_repository_url = "https://shelfwood-mpm.netlify.app/"
-local default_tap_url = "https://shelfwood-mpm-packages.netlify.app/"
+local mpm_url = "https://shelfwood-mpm.netlify.app/"
+local tap_url = "https://shelfwood-mpm-packages.netlify.app/"
 
---- Download a file from URL to local path
---- @param url string Source URL
---- @param path string Destination path
---- @return boolean success
-local function downloadFile(url, path)
-    local response = http.get(url)
+local logo = [[
+ __  __ ___ __  __
+|  \/  | _ \  \/  |
+| |\/| |  _/ |\/| |
+|_|  |_|_| |_|  |_|]]
 
-    if not response then
-        print("x " .. path .. " (failed to connect)")
+local function download(url, path)
+    local r = http.get(url)
+    if not r or r.getResponseCode() ~= 200 then
+        if r then r.close() end
+        print("  x " .. path)
         return false
     end
-
-    local code = response.getResponseCode()
-    if code ~= 200 then
-        print("x " .. path .. " (HTTP " .. code .. ")")
-        response.close()
-        return false
-    end
-
-    local content = response.readAll()
-    response.close()
-
-    if not content then
-        print("x " .. path .. " (empty response)")
-        return false
-    end
-
-    -- Ensure directory exists
-    local dirPath = fs.getDir(path)
-    if dirPath and dirPath ~= "" and not fs.exists(dirPath) then
-        fs.makeDir(dirPath)
-    end
-
-    local file = fs.open(path, "w")
-    if not file then
-        print("x " .. path .. " (cannot write)")
-        return false
-    end
-
-    file.write(content)
-    file.close()
-    print("+ " .. path)
+    local c = r.readAll()
+    r.close()
+    local d = fs.getDir(path)
+    if d ~= "" and not fs.exists(d) then fs.makeDir(d) end
+    local f = fs.open(path, "w")
+    if not f then return false end
+    f.write(c)
+    f.close()
+    print("  + " .. path)
     return true
 end
 
---- Create default taps configuration
-local function createTapsConfig()
-    local config = {
+local function createTaps()
+    local cfg = {
         version = 1,
         defaultTap = "official",
         taps = {
             official = {
                 name = "official",
-                url = default_tap_url,
-                type = "direct",
-                description = "Official MPM package repository"
+                url = tap_url,
+                type = "direct"
             }
         }
     }
-
-    local file = fs.open("/mpm/taps.json", "w")
-    if file then
-        file.write(textutils.serializeJSON(config))
-        file.close()
-        print("+ taps.json")
-        return true
+    local f = fs.open("/mpm/taps.json", "w")
+    if f then
+        f.write(textutils.serializeJSON(cfg))
+        f.close()
     end
-    return false
 end
 
--- Main installation
+-- Main
 print("")
-print("=== MPM Installer ===")
+print(logo)
+print("Minecraft Package Manager")
 print("")
 
--- Create directories
-local dirs = {
-    "/mpm",
-    "/mpm/Packages",
-    "/mpm/Core",
-    "/mpm/Core/Commands",
-    "/mpm/Core/Utils"
-}
-
-for _, dir in ipairs(dirs) do
-    if not fs.exists(dir) then
-        fs.makeDir(dir)
-    end
+-- Directories
+for _, d in ipairs({"/mpm", "/mpm/Packages", "/mpm/Core", "/mpm/Core/Commands", "/mpm/Core/Utils"}) do
+    if not fs.exists(d) then fs.makeDir(d) end
 end
 
 -- Fetch manifest
-print("Fetching file list...")
-local response = http.get(mpm_repository_url .. "manifest.json")
-
-if not response then
-    print("")
-    print("Error: Failed to connect to MPM repository.")
-    print("Check your internet connection and try again.")
+print("[*] Fetching files...")
+local r = http.get(mpm_url .. "manifest.json")
+if not r then
+    print("[!] Connection failed")
     return
 end
-
-local content = response.readAll()
-response.close()
-
-if not content then
-    print("")
-    print("Error: Empty response from server.")
-    return
-end
-
-local manifest = textutils.unserialiseJSON(content)
+local manifest = textutils.unserialiseJSON(r.readAll())
+r.close()
 
 if not manifest then
-    print("")
-    print("Error: Invalid manifest format.")
+    print("[!] Invalid manifest")
     return
 end
 
-print("Installing " .. #manifest .. " files...")
+-- Download
 print("")
-
--- Download each file
-local success = 0
-local failed = 0
-
+local ok, fail = 0, 0
 for _, file in ipairs(manifest) do
-    local targetPath = "/mpm/" .. file
-
-    -- mpm.lua goes to root
-    if file == "mpm.lua" then
-        targetPath = "/mpm.lua"
-    end
-
-    if downloadFile(mpm_repository_url .. file, targetPath) then
-        success = success + 1
-    else
-        failed = failed + 1
-    end
+    local path = file == "mpm.lua" and "/mpm.lua" or "/mpm/" .. file
+    if download(mpm_url .. file, path) then ok = ok + 1 else fail = fail + 1 end
 end
 
--- Create taps configuration
-createTapsConfig()
+createTaps()
 
 print("")
-
-if failed > 0 then
-    print("Warning: " .. failed .. " file(s) failed to download.")
-    print("Run 'mpm self_update' to retry.")
+if fail > 0 then
+    print("[!] " .. fail .. " files failed - run 'mpm self_update'")
 else
-    print("MPM installed successfully!")
+    print("[+] Installed successfully!")
 end
 
-print("")
-print("Default tap: " .. default_tap_url)
 print("")
 print("Quick start:")
-print("  mpm help              Show all commands")
-print("  mpm list remote       View available packages")
-print("  mpm install <pkg>     Install a package")
-print("  mpm tap <source>      Add custom repository")
+print("  mpm list remote    View packages")
+print("  mpm install <pkg>  Install package")
+print("  mpm help           Show all commands")
 print("")

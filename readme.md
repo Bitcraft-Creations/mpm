@@ -1,195 +1,105 @@
-# MPM - Minecraft Package Manager
+# MPM
 
-MPM is a package manager for Minecraft's ComputerCraft ([CC:Tweaked](https://tweaked.cc)) mod. Designed to work on CraftOS, it allows you to easily install, update and execute scripts and utilities.
+```
+ __  __ ___ __  __
+|  \/  | _ \  \/  |
+| |\/| |  _/ |\/| |
+|_|  |_|_| |_|  |_|
+```
 
-## Installation
+Package manager for [CC:Tweaked](https://tweaked.cc) computers in Minecraft.
 
-Run the following command to install MPM on your in-game computer:
+## Install
 
-```bash
+```
 wget run https://shelfwood-mpm.netlify.app/install.lua
 ```
 
 ## Commands
 
-### Package Management
-
-| Command | Description |
-|---------|-------------|
-| `mpm install <package>` | Install a package |
-| `mpm remove <package>` | Remove an installed package |
-| `mpm update [package]` | Update specific or all packages |
-| `mpm list [local\|remote]` | List installed or available packages |
-| `mpm info <package>` | Show package details |
-
-### Running Packages
-
-| Command | Description |
-|---------|-------------|
-| `mpm run <package>` | Run a package's start.lua |
-| `mpm run <package/script>` | Run a specific script |
-| `mpm startup [package]` | Set package to run on boot |
-
-### Repository Management (Taps)
-
-| Command | Description |
-|---------|-------------|
-| `mpm tap <source>` | Add a package repository |
-| `mpm tap --list` | List configured taps |
-| `mpm tap --remove <name>` | Remove a tap |
-| `mpm tap --default <name>` | Set default tap |
-| `mpm untap <name>` | Alias for tap --remove |
-
-### System
-
-| Command | Description |
-|---------|-------------|
-| `mpm self_update` | Update MPM itself |
-| `mpm uninstall` | Completely remove MPM |
-| `mpm help [command]` | Show help |
-
-## Taps (Custom Package Repositories)
-
-Taps allow you to add custom package sources. MPM comes with the official tap pre-configured.
-
-### Adding a Tap
-
-```bash
-# GitHub shorthand (prompts for hosting URL)
-mpm tap j-shelfwood/mpm-packages
-
-# Full GitHub URL
-mpm tap https://github.com/j-shelfwood/mpm-packages
-
-# Direct hosting URL (Netlify, custom server, etc.)
-mpm tap https://my-packages.netlify.app/
+```
+mpm install <pkg>      Install package
+mpm remove <pkg>       Remove package
+mpm update [pkg]       Update packages
+mpm list [remote]      List packages
+mpm info <pkg>         Package details
+mpm run <pkg>          Run package
+mpm startup [pkg]      Set boot package
+mpm tap <url>          Add repository
+mpm self_update        Update MPM
+mpm help [cmd]         Show help
 ```
 
-### Managing Taps
+## Quick Start
 
 ```bash
-# List all configured taps
-mpm tap --list
-
-# Remove a tap
-mpm tap --remove my-tap
-mpm untap my-tap
-
-# Set a tap as default
-mpm tap --default my-tap
-```
-
-### Installing from a Specific Tap
-
-```bash
-# Install from specific tap
-mpm install my-tap/package-name
-
-# Install from default tap
-mpm install package-name
-```
-
-## Usage Examples
-
-Install packages:
-```bash
-mpm install tools
-mpm install views displays utils peripherals
-```
-
-Run packages:
-```bash
-mpm run displays
-mpm run tools/inspect_peripheral
-```
-
-View available packages from all taps:
-```bash
+# See available packages
 mpm list remote
+
+# Install packages
+mpm install displays views utils peripherals
+
+# Run a package
+mpm run displays
+
+# Set startup package
+mpm startup displays
 ```
 
-Configure startup:
+## Taps
+
+Add custom package repositories:
+
 ```bash
-mpm startup displays
-mpm startup --show
+# Direct URL
+mpm tap https://my-packages.netlify.app/
+
+# Manage taps
+mpm tap --list
+mpm tap --remove mytap
+mpm tap --default mytap
+
+# Install from specific tap
+mpm install mytap/package
 ```
 
 ## Package Structure
 
-Packages are stored in `/mpm/Packages/<package-name>/` and contain:
+```
+my-package/
+├── manifest.json
+├── start.lua
+└── lib/
+    └── utils.lua
+```
 
-- `manifest.json` - Package metadata
-- `start.lua` - Entry point (optional)
-- Additional Lua files
-
-### Manifest Format
-
+**manifest.json:**
 ```json
 {
   "name": "my-package",
-  "description": "A description of the package",
-  "version": "1.0.0",
-  "author": "Your Name",
-  "files": [
-    "start.lua",
-    "lib/utils.lua"
-  ],
-  "dependencies": [
-    "utils"
-  ]
+  "description": "Description",
+  "files": ["start.lua", "lib/utils.lua"],
+  "dependencies": ["utils"]
 }
 ```
 
-## Hosting a Package Repository
-
-To create your own tap:
-
-1. Create a directory structure with packages:
-   ```
-   my-packages/
-   ├── index.json          # Package listing
-   ├── package-a/
-   │   ├── manifest.json
-   │   └── start.lua
-   └── package-b/
-       ├── manifest.json
-       └── lib/utils.lua
-   ```
-
-2. Create `index.json` listing your packages:
-   ```json
-   [
-     {"name": "package-a", "description": "Description A"},
-     {"name": "package-b", "description": "Description B"}
-   ]
-   ```
-
-3. Host on Netlify, GitHub Pages, or any static file server
-
-4. Add the tap:
-   ```bash
-   mpm tap https://your-packages.netlify.app/
-   ```
-
 ## Loading Dependencies
-
-Within a running package, use the global `mpm()` function to load other packages:
 
 ```lua
 local AEInterface = mpm('peripherals/AEInterface')
-local ae = AEInterface.new()
 ```
 
-## Configuration Files
+## Creating a Tap
 
-| File | Purpose |
-|------|---------|
-| `/mpm/taps.json` | Configured package repositories |
-| `/startup.config` | Startup package configuration |
-| `/startup.lua` | Generated boot script |
+1. Create packages with `manifest.json`
+2. Add `index.json` listing packages:
+   ```json
+   [{"name": "pkg", "description": "..."}]
+   ```
+3. Host on Netlify/GitHub Pages
+4. `mpm tap https://your-url/`
 
-## Repository
+## Links
 
-- MPM Core: https://shelfwood-mpm.netlify.app/
-- Official Packages: https://shelfwood-mpm-packages.netlify.app/
-- GitHub: https://github.com/j-shelfwood/mpm
+- [Official Packages](https://shelfwood-mpm-packages.netlify.app/)
+- [GitHub](https://github.com/Bitcraft-Creations/mpm)
