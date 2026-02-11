@@ -4,6 +4,7 @@
   "Core/Commands/Help.lua",
   "Core/Commands/Info.lua",
   "Core/Commands/Install.lua",
+  "Core/Commands/Intro.lua",
   "Core/Commands/List.lua",
   "Core/Commands/Remove.lua",
   "Core/Commands/Run.lua",

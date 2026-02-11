@@ -15,9 +15,15 @@ Package manager for [CC:Tweaked](https://tweaked.cc) computers in Minecraft.
 wget run https://shelfwood-mpm.netlify.app/install.lua
 ```
 
+After installation, run the interactive tutorial:
+```
+mpm intro
+```
+
 ## Commands
 
 ```
+mpm intro              Interactive tutorial
 mpm install <pkg>      Install package
 mpm remove <pkg>       Remove package
 mpm update [pkg]       Update packages
@@ -33,34 +39,26 @@ mpm help [cmd]         Show help
 ## Quick Start
 
 ```bash
-# See available packages
-mpm list remote
+# Interactive tutorial (recommended for new users)
+mpm intro
 
-# Install packages
-mpm install displays views utils peripherals
-
-# Run a package
-mpm run displays
-
-# Set startup package
-mpm startup displays
+# Or manually:
+mpm list remote                           # See packages
+mpm install displays views utils          # Install
+mpm run displays                          # Run
+mpm startup displays                      # Set as boot
 ```
 
 ## Taps
 
-Add custom package repositories:
+Package repositories:
 
 ```bash
-# Direct URL
-mpm tap https://my-packages.netlify.app/
-
-# Manage taps
-mpm tap --list
-mpm tap --remove mytap
-mpm tap --default mytap
-
-# Install from specific tap
-mpm install mytap/package
+mpm tap https://my-packages.netlify.app/  # Add tap
+mpm tap --list                            # List taps
+mpm tap --remove mytap                    # Remove tap
+mpm tap --default mytap                   # Set default
+mpm install mytap/package                 # From specific tap
 ```
 
 ## Package Structure
@@ -69,8 +67,7 @@ mpm install mytap/package
 my-package/
 ├── manifest.json
 ├── start.lua
-└── lib/
-    └── utils.lua
+└── lib/utils.lua
 ```
 
 **manifest.json:**
@@ -83,16 +80,10 @@ my-package/
 }
 ```
 
-## Loading Dependencies
-
-```lua
-local AEInterface = mpm('peripherals/AEInterface')
-```
-
 ## Creating a Tap
 
 1. Create packages with `manifest.json`
-2. Add `index.json` listing packages:
+2. Add `index.json`:
    ```json
    [{"name": "pkg", "description": "..."}]
    ```

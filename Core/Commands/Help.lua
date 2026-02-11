@@ -66,6 +66,11 @@ helpModule = {
             usage = "mpm help [command]",
             desc = "Show help for commands",
             examples = {"mpm help", "mpm help tap"}
+        },
+        intro = {
+            usage = "mpm intro",
+            desc = "Interactive tutorial for new users",
+            examples = {"mpm intro"}
         }
     },
 

@@ -94,8 +94,19 @@ else
 end
 
 print("")
-print("Quick start:")
-print("  mpm list remote    View packages")
-print("  mpm install <pkg>  Install package")
-print("  mpm help           Show all commands")
-print("")
+print("Run the interactive tutorial? (y/n)")
+print("(Walks you through installing packages)")
+
+local choice = read()
+if choice:lower() == "y" then
+    -- Run the intro
+    shell.run("mpm intro")
+else
+    print("")
+    print("Quick start:")
+    print("  mpm intro          Interactive tutorial")
+    print("  mpm list remote    View packages")
+    print("  mpm install <pkg>  Install package")
+    print("  mpm help           All commands")
+    print("")
+end
