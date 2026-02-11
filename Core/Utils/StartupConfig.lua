@@ -96,7 +96,7 @@ shell.run('mpm run ]] .. config.package
             script = script .. " " .. config.parameters
         end
 
-        script = script .. [[')\n]]
+        script = script .. "')\n"
 
         return script
     end,
