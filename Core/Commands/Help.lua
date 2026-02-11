@@ -51,16 +51,29 @@ helpModule = {
             }
         },
         startup = {
-            usage = "mpm startup [package] [args...]",
-            description = "Configure a package to run on computer boot.",
+            usage = "mpm startup [package] [args...] | --refresh | --clear | --show",
+            description = "Configure a package to run on computer boot. Creates startup.config for persistence.",
+            options = {
+                "<package>  - Set the startup package",
+                "--show     - Display current configuration",
+                "--refresh  - Regenerate startup.lua from config",
+                "--clear    - Remove startup configuration"
+            },
             examples = {
                 "mpm startup displays",
-                "mpm startup"
+                "mpm startup --show",
+                "mpm startup --refresh",
+                "mpm startup --clear"
+            },
+            notes = {
+                "On boot: runs self_update, then update, then your package",
+                "Config stored in /startup.config for persistence",
+                "self_update auto-refreshes startup.lua from config"
             }
         },
         self_update = {
             usage = "mpm self_update",
-            description = "Update MPM itself to the latest version.",
+            description = "Update MPM itself to the latest version. Also refreshes startup.lua if configured.",
             examples = {
                 "mpm self_update"
             }
@@ -105,16 +118,16 @@ helpModule = {
         print("Usage: mpm <command> [arguments]")
         print("")
         print("Commands:")
-        print("  install <pkg>     Install a package")
-        print("  remove <pkg>      Remove a package")
-        print("  update [pkg]      Update packages")
-        print("  list [local|remote]  List packages")
-        print("  run <pkg>         Run a package")
-        print("  startup [pkg]     Set startup package")
-        print("  self_update       Update MPM")
-        print("  info <pkg>        Package information")
-        print("  uninstall         Remove MPM completely")
-        print("  help [cmd]        Show this help")
+        print("  install <pkg>       Install a package")
+        print("  remove <pkg>        Remove a package")
+        print("  update [pkg]        Update packages")
+        print("  list [local|remote] List packages")
+        print("  run <pkg>           Run a package")
+        print("  startup [pkg]       Set startup package")
+        print("  self_update         Update MPM")
+        print("  info <pkg>          Package information")
+        print("  uninstall           Remove MPM completely")
+        print("  help [cmd]          Show this help")
         print("")
         print("Run 'mpm help <command>' for details.")
         print("")
@@ -138,10 +151,26 @@ helpModule = {
         print(cmd.description)
         print("")
 
+        if cmd.options and #cmd.options > 0 then
+            print("Options:")
+            for _, option in ipairs(cmd.options) do
+                print("  " .. option)
+            end
+            print("")
+        end
+
         if cmd.examples and #cmd.examples > 0 then
             print("Examples:")
             for _, example in ipairs(cmd.examples) do
                 print("  " .. example)
+            end
+            print("")
+        end
+
+        if cmd.notes and #cmd.notes > 0 then
+            print("Notes:")
+            for _, note in ipairs(cmd.notes) do
+                print("  - " .. note)
             end
             print("")
         end

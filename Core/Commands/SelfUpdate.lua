@@ -11,6 +11,7 @@ local repositoryUrl = "https://shelfwood-mpm.netlify.app/"
        b. Compare with local version (byte-by-byte)
        c. Update if different OR if local file missing
     3. Handle mpm.lua specially (lives in root, not /mpm/)
+    4. Regenerate startup.lua from startup.config if configured
 ]]
 selfUpdateModule = {
     usage = "mpm self_update",
@@ -54,6 +55,9 @@ selfUpdateModule = {
         if #failedFiles > 0 then
             print("Warning: " .. #failedFiles .. " file(s) failed to update.")
         end
+
+        -- Regenerate startup.lua if configured
+        selfUpdateModule.refreshStartup()
     end,
 
     getManifest = function()
@@ -129,6 +133,31 @@ selfUpdateModule = {
         else
             local success = File.put(localPath, remoteContent)
             return success, success
+        end
+    end,
+
+    refreshStartup = function()
+        -- Check if StartupConfig exists (it might not on older installs)
+        local success, StartupConfig = pcall(function()
+            return exports("Utils.StartupConfig")
+        end)
+
+        if not success or not StartupConfig then
+            return  -- StartupConfig not available yet
+        end
+
+        if not StartupConfig.isConfigured() then
+            return  -- No startup configuration
+        end
+
+        local refreshed, err = StartupConfig.regenerateStartup()
+
+        if refreshed then
+            print("")
+            print("Startup script refreshed from config.")
+        elseif err then
+            print("")
+            print("Note: Could not refresh startup.lua: " .. err)
         end
     end
 }
