@@ -1,100 +1,133 @@
-local this
-
 --[[
-    This command updates the specified package or all packages if no package is specified.
-    To update a package we need to:
-    - Obtain the manifest.json
-    - For each file in the manifest.files, download the file from the package github repository
-    - Replace the existing file with the new file
-    - For any packages that are no longer in the manifest, delete them
-]]
+    Update command: mpm update [package] [package2] ...
 
-this = {
-    usage = "mpm update <package>",
+    Updates specified packages, or all installed packages if none specified.
+]]
+local updateModule = nil
+
+updateModule = {
+    usage = "mpm update [package] [package2] ...",
 
     run = function(...)
         local names = {...}
-        print("\nChecking for updates...\n")
-        -- If <package> names are specified, we only update those packages
-        if #names > 0 then
-            this.updatePackages(names)
+        local File = exports("Utils.File")
+        local PackageDisk = exports("Utils.PackageDisk")
+        local Repo = exports("Utils.PackageRepository")
+        local Validation = exports("Utils.Validation")
 
-            return
+        print("")
+        print("Checking for updates...")
+        print("")
+
+        -- If no packages specified, update all installed
+        if #names == 0 then
+            names = PackageDisk.listInstalled()
+            if #names == 0 then
+                print("No packages installed.")
+                return
+            end
         end
 
-        -- If no <package> names are specified, we update all packages
-        this.updatePackages(exports("Utils.File").list("/mpm/Packages/"))
-    end,
+        local updated = 0
+        local failed = 0
 
-    updatePackages = function(packages)
-        for _, package in ipairs(packages) do
-            this.updatePackage(package)
+        for _, package in ipairs(names) do
+            local success, filesUpdated = updateModule.updatePackage(package)
+            if success then
+                if filesUpdated > 0 then
+                    updated = updated + 1
+                end
+            else
+                failed = failed + 1
+            end
         end
-        print("\nDone!\n")
+
+        print("")
+        if updated > 0 or failed > 0 then
+            print("Done: " .. updated .. " updated, " .. failed .. " failed")
+        else
+            print("All packages are up to date.")
+        end
+        print("")
     end,
 
     updatePackage = function(package)
-        print("- @" .. package)
-        local manifest = exports("Utils.PackageRepository").getPackage(package)
+        local File = exports("Utils.File")
+        local PackageDisk = exports("Utils.PackageDisk")
+        local Repo = exports("Utils.PackageRepository")
 
-        -- Install any missing dependencies
-        if manifest.dependencies then
+        print("@" .. package)
+
+        -- Check if installed
+        if not PackageDisk.isInstalled(package) then
+            print("  Package not installed. Use: mpm install " .. package)
+            return false, 0
+        end
+
+        -- Fetch remote manifest
+        local manifest, err = Repo.getPackage(package)
+        if not manifest then
+            print("  Error: " .. (err or "Failed to fetch manifest"))
+            return false, 0
+        end
+
+        -- Install missing dependencies
+        if manifest.dependencies and type(manifest.dependencies) == "table" then
             for _, dep in ipairs(manifest.dependencies) do
-                if not exports("Utils.PackageDisk").isInstalled(dep) then
-                    print("\nInstalling missing dependency: " .. dep)
-                    exports("Utils.PackageDisk").install(dep)
+                if not PackageDisk.isInstalled(dep) then
+                    print("  Installing missing dependency: " .. dep)
+                    PackageDisk.install(dep)
                 end
             end
         end
 
         -- Update manifest file
-        exports("Utils.File").put("/mpm/Packages/" .. package .. "/manifest.json", textutils.serializeJSON(manifest))
+        local manifestPath = "/mpm/Packages/" .. package .. "/manifest.json"
+        File.put(manifestPath, textutils.serializeJSON(manifest))
 
-        for _, file in ipairs(manifest.files) do
-            this.updateFile(package, file)
+        -- Update each file
+        local filesUpdated = 0
+
+        if manifest.files and type(manifest.files) == "table" then
+            for _, file in ipairs(manifest.files) do
+                local updated = updateModule.updateFile(package, file)
+                if updated then
+                    print("  + " .. file)
+                    filesUpdated = filesUpdated + 1
+                end
+            end
         end
 
-        -- this.removeFilesNotInList(package, manifest.files)
+        if filesUpdated == 0 then
+            print("  (up to date)")
+        end
+
+        return true, filesUpdated
     end,
 
     updateFile = function(package, filename)
-        -- Obtain the file from the repository
-        local content = exports("Utils.PackageRepository").downloadFile(package, filename)
+        local File = exports("Utils.File")
+        local Repo = exports("Utils.PackageRepository")
+
+        -- Fetch remote content
+        local content, err = Repo.downloadFile(package, filename)
+        if not content then
+            print("  x " .. filename .. " (failed)")
+            return false
+        end
+
         local filepath = "/mpm/Packages/" .. package .. "/" .. filename
 
-        -- If the file content is the same, return
-        local installedContent = exports("Utils.File").get(filepath)
-
-        if installedContent == content then
-            return
+        -- Compare with local
+        local localContent = File.get(filepath)
+        if localContent == content then
+            return false  -- No update needed
         end
 
-        -- Replace the existing file with the new updated file
-        exports("Utils.File").put(filepath, content)
-
-        -- Print the file name
-        print("  - " .. filename)
-    end,
-
-    removeFilesNotInList = function(package, files)
-        local files = exports("Utils.File").list("/mpm/Packages/" .. package)
-        for _, file in ipairs(files) do
-            if not this.isInList(file, files) then
-                exports("Utils.File").delete("/mpm/Packages/" .. package .. "/" .. file)
-                -- Print the file name with an X to indicate it is deleted
-                print("X - " .. file)
-            end
-        end
-    end,
-
-    isInList = function(file, list)
-        for _, item in ipairs(list) do
-            if item .. ".lua" == file then
-                return true
-            end
-        end
-        return false
+        -- Update file
+        File.put(filepath, content)
+        return true
     end
 }
 
-return this
+return updateModule

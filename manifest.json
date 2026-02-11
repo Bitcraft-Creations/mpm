@@ -1,14 +1,18 @@
 [
   "mpm.lua",
   "bootstrap.lua",
+  "Core/Commands/Help.lua",
+  "Core/Commands/Info.lua",
   "Core/Commands/Install.lua",
   "Core/Commands/List.lua",
   "Core/Commands/Remove.lua",
   "Core/Commands/Run.lua",
   "Core/Commands/SelfUpdate.lua",
   "Core/Commands/Startup.lua",
+  "Core/Commands/Uninstall.lua",
   "Core/Commands/Update.lua",
   "Core/Utils/File.lua",
+  "Core/Utils/PackageDisk.lua",
   "Core/Utils/PackageRepository.lua",
-  "Core/Utils/PackageDisk.lua"
+  "Core/Utils/Validation.lua"
 ]
