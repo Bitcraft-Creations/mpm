@@ -12,10 +12,14 @@ helpModule = {
     commands = {
         install = {
             usage = "mpm install <package> [package2] ...",
-            description = "Install packages from the remote registry.",
+            description = "Install packages from configured taps.",
             examples = {
                 "mpm install tools",
-                "mpm install views displays utils"
+                "mpm install views displays utils",
+                "mpm install mytap/custom-package"
+            },
+            notes = {
+                "Use tap/package syntax to install from specific tap"
             }
         },
         remove = {
@@ -36,7 +40,7 @@ helpModule = {
         },
         list = {
             usage = "mpm list [local|remote]",
-            description = "List installed packages (default) or available remote packages.",
+            description = "List installed packages (default) or available packages from all taps.",
             examples = {
                 "mpm list",
                 "mpm list remote"
@@ -52,7 +56,7 @@ helpModule = {
         },
         startup = {
             usage = "mpm startup [package] [args...] | --refresh | --clear | --show",
-            description = "Configure a package to run on computer boot. Creates startup.config for persistence.",
+            description = "Configure a package to run on computer boot.",
             options = {
                 "<package>  - Set the startup package",
                 "--show     - Display current configuration",
@@ -67,13 +71,40 @@ helpModule = {
             },
             notes = {
                 "On boot: runs self_update, then update, then your package",
-                "Config stored in /startup.config for persistence",
-                "self_update auto-refreshes startup.lua from config"
+                "Config stored in /startup.config for persistence"
+            }
+        },
+        tap = {
+            usage = "mpm tap <source> | --list | --remove <name> | --default <name>",
+            description = "Manage package repository sources (taps).",
+            options = {
+                "<source>        - Add a new tap",
+                "--list          - List all configured taps",
+                "--remove <name> - Remove a tap",
+                "--default <name>- Set default tap"
+            },
+            examples = {
+                "mpm tap j-shelfwood/mpm-packages",
+                "mpm tap https://my-packages.netlify.app/",
+                "mpm tap --list",
+                "mpm tap --remove mytap",
+                "mpm tap --default mytap"
+            },
+            notes = {
+                "GitHub shorthand: user/repo (prompts for hosting URL)",
+                "Direct URL: https://packages.example.com/"
+            }
+        },
+        untap = {
+            usage = "mpm untap <name>",
+            description = "Remove a tap. Alias for: mpm tap --remove <name>",
+            examples = {
+                "mpm untap mytap"
             }
         },
         self_update = {
             usage = "mpm self_update",
-            description = "Update MPM itself to the latest version. Also refreshes startup.lua if configured.",
+            description = "Update MPM itself. Also refreshes startup.lua if configured.",
             examples = {
                 "mpm self_update"
             }
@@ -82,7 +113,8 @@ helpModule = {
             usage = "mpm info <package>",
             description = "Display detailed information about a package.",
             examples = {
-                "mpm info tools"
+                "mpm info tools",
+                "mpm info mytap/package"
             }
         },
         uninstall = {
@@ -97,7 +129,7 @@ helpModule = {
             description = "Display this help or help for a specific command.",
             examples = {
                 "mpm help",
-                "mpm help install"
+                "mpm help tap"
             }
         }
     },
@@ -117,17 +149,26 @@ helpModule = {
         print("")
         print("Usage: mpm <command> [arguments]")
         print("")
-        print("Commands:")
+        print("Package Management:")
         print("  install <pkg>       Install a package")
         print("  remove <pkg>        Remove a package")
         print("  update [pkg]        Update packages")
         print("  list [local|remote] List packages")
+        print("  info <pkg>          Package information")
+        print("")
+        print("Running:")
         print("  run <pkg>           Run a package")
         print("  startup [pkg]       Set startup package")
+        print("")
+        print("Repository:")
+        print("  tap <source>        Add a tap")
+        print("  tap --list          List taps")
+        print("  untap <name>        Remove a tap")
+        print("")
+        print("System:")
         print("  self_update         Update MPM")
-        print("  info <pkg>          Package information")
-        print("  uninstall           Remove MPM completely")
-        print("  help [cmd]          Show this help")
+        print("  uninstall           Remove MPM")
+        print("  help [cmd]          Show help")
         print("")
         print("Run 'mpm help <command>' for details.")
         print("")

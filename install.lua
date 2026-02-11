@@ -8,6 +8,7 @@
 ]]
 
 local mpm_repository_url = "https://shelfwood-mpm.netlify.app/"
+local default_tap_url = "https://shelfwood-mpm-packages.netlify.app/"
 
 --- Download a file from URL to local path
 --- @param url string Source URL
@@ -54,30 +55,49 @@ local function downloadFile(url, path)
     return true
 end
 
+--- Create default taps configuration
+local function createTapsConfig()
+    local config = {
+        version = 1,
+        defaultTap = "official",
+        taps = {
+            official = {
+                name = "official",
+                url = default_tap_url,
+                type = "direct",
+                description = "Official MPM package repository"
+            }
+        }
+    }
+
+    local file = fs.open("/mpm/taps.json", "w")
+    if file then
+        file.write(textutils.serializeJSON(config))
+        file.close()
+        print("+ taps.json")
+        return true
+    end
+    return false
+end
+
 -- Main installation
 print("")
 print("=== MPM Installer ===")
 print("")
 
 -- Create directories
-if not fs.exists("/mpm") then
-    fs.makeDir("/mpm")
-end
+local dirs = {
+    "/mpm",
+    "/mpm/Packages",
+    "/mpm/Core",
+    "/mpm/Core/Commands",
+    "/mpm/Core/Utils"
+}
 
-if not fs.exists("/mpm/Packages") then
-    fs.makeDir("/mpm/Packages")
-end
-
-if not fs.exists("/mpm/Core") then
-    fs.makeDir("/mpm/Core")
-end
-
-if not fs.exists("/mpm/Core/Commands") then
-    fs.makeDir("/mpm/Core/Commands")
-end
-
-if not fs.exists("/mpm/Core/Utils") then
-    fs.makeDir("/mpm/Core/Utils")
+for _, dir in ipairs(dirs) do
+    if not fs.exists(dir) then
+        fs.makeDir(dir)
+    end
 end
 
 -- Fetch manifest
@@ -130,6 +150,9 @@ for _, file in ipairs(manifest) do
     end
 end
 
+-- Create taps configuration
+createTapsConfig()
+
 print("")
 
 if failed > 0 then
@@ -140,8 +163,11 @@ else
 end
 
 print("")
-print("Usage:")
-print("  mpm help           - Show all commands")
-print("  mpm install <pkg>  - Install a package")
-print("  mpm list remote    - View available packages")
+print("Default tap: " .. default_tap_url)
+print("")
+print("Quick start:")
+print("  mpm help              Show all commands")
+print("  mpm list remote       View available packages")
+print("  mpm install <pkg>     Install a package")
+print("  mpm tap <source>      Add custom repository")
 print("")

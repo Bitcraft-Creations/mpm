@@ -1,7 +1,7 @@
 --[[
     List command: mpm list [local|remote]
 
-    Lists installed packages (default) or available remote packages.
+    Lists installed packages (default) or available remote packages from all taps.
 ]]
 local listModule = nil
 
@@ -9,10 +9,6 @@ listModule = {
     usage = "mpm list [local|remote]",
 
     run = function(source)
-        local Validation = exports("Utils.Validation")
-        local PackageDisk = exports("Utils.PackageDisk")
-        local Repo = exports("Utils.PackageRepository")
-
         source = source or "local"
         source = source:lower()
 
@@ -24,7 +20,7 @@ listModule = {
             print("Error: Unknown source '" .. source .. "'")
             print("Usage: " .. listModule.usage)
             print("  local  - List installed packages (default)")
-            print("  remote - List available packages from registry")
+            print("  remote - List available packages from all taps")
         end
     end,
 
@@ -38,7 +34,7 @@ listModule = {
             print("No packages installed.")
             print("")
             print("Install packages with: mpm install <package>")
-            print("View available: mpm list remote")
+            print("View available:        mpm list remote")
             print("")
             return
         end
@@ -48,9 +44,19 @@ listModule = {
 
         for _, pkg in ipairs(packages) do
             local manifest = PackageDisk.getManifest(pkg)
-            if manifest and manifest.description then
-                print("  @" .. pkg)
-                print("    " .. manifest.description)
+            local tapInfo = ""
+
+            if manifest then
+                if manifest._tap then
+                    tapInfo = " [" .. manifest._tap .. "]"
+                end
+
+                if manifest.description then
+                    print("  @" .. pkg .. tapInfo)
+                    print("    " .. manifest.description)
+                else
+                    print("  @" .. pkg .. tapInfo)
+                end
             else
                 print("  @" .. pkg)
             end
@@ -63,55 +69,78 @@ listModule = {
 
     listRemote = function()
         local Repo = exports("Utils.PackageRepository")
+        local TapRegistry = exports("Utils.TapRegistry")
 
         print("")
-        print("Fetching package index...")
+        print("Fetching package lists...")
 
-        local packages, err = Repo.listPackages()
-
-        if not packages then
-            print("Error: " .. (err or "Failed to fetch package index"))
-            print("")
-            print("The package registry may not have an index.json file.")
-            print("Try installing a known package: mpm install <package>")
-            print("")
-            return
-        end
+        local allPackages = Repo.listAllPackages()
+        local totalPackages = 0
+        local tapCount = 0
 
         print("")
         print("Available packages:")
         print("")
 
-        if type(packages) == "table" then
-            -- Handle array of package names
-            if #packages > 0 then
-                for _, pkg in ipairs(packages) do
-                    if type(pkg) == "string" then
-                        print("  @" .. pkg)
-                    elseif type(pkg) == "table" and pkg.name then
-                        print("  @" .. pkg.name)
-                        if pkg.description then
-                            print("    " .. pkg.description)
+        for tapName, packages in pairs(allPackages) do
+            tapCount = tapCount + 1
+
+            -- Check for errors
+            if packages._error then
+                print("[" .. tapName .. "] (error: " .. packages._error .. ")")
+                print("")
+            elseif type(packages) == "table" then
+                local tap = TapRegistry.getTap(tapName)
+                local isDefault = (TapRegistry.getDefault().name == tapName)
+                local marker = isDefault and " (default)" or ""
+
+                print("[" .. tapName .. "]" .. marker)
+
+                -- Handle array of packages
+                if #packages > 0 then
+                    for _, pkg in ipairs(packages) do
+                        totalPackages = totalPackages + 1
+                        if type(pkg) == "string" then
+                            print("  @" .. pkg)
+                        elseif type(pkg) == "table" then
+                            local name = pkg.name or pkg[1] or "unknown"
+                            print("  @" .. name)
+                            if pkg.description then
+                                print("    " .. pkg.description)
+                            end
+                        end
+                    end
+                else
+                    -- Handle object with package names as keys
+                    for name, info in pairs(packages) do
+                        if name ~= "_error" then
+                            totalPackages = totalPackages + 1
+                            if type(info) == "table" then
+                                print("  @" .. name)
+                                if info.description then
+                                    print("    " .. info.description)
+                                end
+                            else
+                                print("  @" .. name)
+                            end
                         end
                     end
                 end
-            else
-                -- Handle object with package names as keys
-                for name, info in pairs(packages) do
-                    if type(info) == "table" then
-                        print("  @" .. name)
-                        if info.description then
-                            print("    " .. info.description)
-                        end
-                    else
-                        print("  @" .. name)
-                    end
-                end
+                print("")
             end
+        end
+
+        if totalPackages == 0 then
+            print("No packages found in any tap.")
+            print("")
+            print("Add a tap with: mpm tap <source>")
+        else
+            print("Total: " .. totalPackages .. " package(s) from " .. tapCount .. " tap(s)")
         end
 
         print("")
         print("Install with: mpm install <package>")
+        print("From tap:     mpm install <tap>/<package>")
         print("")
     end
 }

@@ -9,11 +9,14 @@
   "Core/Commands/Run.lua",
   "Core/Commands/SelfUpdate.lua",
   "Core/Commands/Startup.lua",
+  "Core/Commands/Tap.lua",
   "Core/Commands/Uninstall.lua",
+  "Core/Commands/Untap.lua",
   "Core/Commands/Update.lua",
   "Core/Utils/File.lua",
   "Core/Utils/PackageDisk.lua",
   "Core/Utils/PackageRepository.lua",
   "Core/Utils/StartupConfig.lua",
+  "Core/Utils/TapRegistry.lua",
   "Core/Utils/Validation.lua"
 ]

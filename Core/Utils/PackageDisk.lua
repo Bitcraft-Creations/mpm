@@ -4,18 +4,20 @@ local PackageDisk = nil
     The PackageDisk module handles local disk operations for packages.
 
     A package is a directory in /mpm/Packages/. Each package contains:
-    - manifest.json: Package metadata
+    - manifest.json: Package metadata (includes _tap and _tapUrl for source tracking)
       - name: Package identifier
       - description: Human-readable description
       - files: Array of files to download
       - dependencies: (optional) Array of package names to install first
+      - _tap: Source tap name
+      - _tapUrl: Source tap URL
 ]]
 
 local packageDirectory = "/mpm/Packages/"
 
 PackageDisk = {
-    --- Install a package from the registry
-    --- @param name string Package name
+    --- Install a package from a tap
+    --- @param name string Package name (can be tap/package format)
     --- @return boolean success
     install = function(name)
         local Validation = exports("Utils.Validation")
@@ -27,16 +29,19 @@ PackageDisk = {
             return false
         end
 
+        -- Resolve the actual package name (without tap prefix for local storage)
+        local _, tapName, pkgName = Repo.resolvePackage(name)
+
         -- Fetch manifest from remote
         local manifest, err = Repo.getPackage(name)
         if not manifest then
-            print("Error: " .. (err or "Package '" .. name .. "' not found in registry."))
+            print("Error: " .. (err or "Package '" .. name .. "' not found."))
             return false
         end
 
         -- Display package info
         print("")
-        print("@" .. (manifest.name or name))
+        print("@" .. (manifest.name or pkgName) .. " [" .. tapName .. "]")
         if manifest.description then
             print(manifest.description)
         end
@@ -55,14 +60,14 @@ PackageDisk = {
             end
         end
 
-        -- Save manifest locally
-        local manifestPath = packageDirectory .. name .. "/manifest.json"
+        -- Save manifest locally (use pkgName for local path)
+        local manifestPath = packageDirectory .. pkgName .. "/manifest.json"
         File.put(manifestPath, textutils.serializeJSON(manifest))
 
         -- Install each file
         if manifest.files and type(manifest.files) == "table" then
             for _, file in ipairs(manifest.files) do
-                local success = PackageDisk.installFile(name, file)
+                local success = PackageDisk.installFile(name, pkgName, file)
                 if success then
                     print("+ " .. file)
                 else
@@ -72,27 +77,28 @@ PackageDisk = {
         end
 
         print("")
-        print("Successfully installed @" .. name .. "!")
+        print("Installed @" .. pkgName .. " from [" .. tapName .. "]")
         print("")
 
         return true
     end,
 
     --- Install a single file from a package
-    --- @param package string Package name
+    --- @param fullName string Full package name (may include tap)
+    --- @param localName string Local package name (without tap)
     --- @param file string File path within package
     --- @return boolean success
-    installFile = function(package, file)
+    installFile = function(fullName, localName, file)
         local File = exports("Utils.File")
         local Repo = exports("Utils.PackageRepository")
 
-        local content, err = Repo.downloadFile(package, file)
+        local content, err = Repo.downloadFile(fullName, file)
         if not content then
             print("Error: " .. (err or "Failed to download " .. file))
             return false
         end
 
-        local filePath = packageDirectory .. package .. "/" .. file
+        local filePath = packageDirectory .. localName .. "/" .. file
         return File.put(filePath, content)
     end,
 
@@ -116,7 +122,7 @@ PackageDisk = {
         local success = File.delete(packageDirectory .. package)
         if success then
             print("")
-            print("Package '" .. package .. "' removed successfully.")
+            print("Package '" .. package .. "' removed.")
             print("")
         else
             print("Error: Failed to remove package '" .. package .. "'")
