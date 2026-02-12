@@ -154,7 +154,12 @@ introModule = {
                 sleep(1)
 
                 -- Run the shelfos package through mpm run (sets up mpm() global)
-                shell.run("mpm run shelfos")
+                if shell then
+                    shell.run("mpm run shelfos")
+                else
+                    local bootstrap = dofile("/mpm/bootstrap.lua")
+                    bootstrap.handleCommand({"run", "shelfos"})
+                end
 
                 print("")
                 print("Press Enter to continue...")

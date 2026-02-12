@@ -100,7 +100,12 @@ print("(Walks you through installing packages)")
 local choice = read()
 if choice:lower() == "y" then
     -- Run the intro
-    shell.run("mpm intro")
+    if shell then
+        shell.run("mpm intro")
+    else
+        local bootstrap = dofile("/mpm/bootstrap.lua")
+        bootstrap.handleCommand({"intro"})
+    end
 else
     print("")
     print("Quick start:")
