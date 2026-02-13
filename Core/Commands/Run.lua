@@ -1,5 +1,10 @@
 local runModule = nil
 
+-- Module cache for mpm() to ensure singleton behavior
+-- Without caching, each mpm() call returns a NEW table instance,
+-- breaking module-level state (like RemotePeripheral.setClient())
+local mpmCache = {}
+
 --- Global mpm() function for package dependencies within running scripts
 --- @param package string Package path to load (e.g., "peripherals/AEInterface")
 --- @return any The loaded module
@@ -10,6 +15,11 @@ function mpm(package)
         error("mpm() requires a package name")
     end
 
+    -- Check cache first (ensures singleton modules)
+    if mpmCache[package] then
+        return mpmCache[package]
+    end
+
     local path = "/mpm/Packages/" .. package
 
     if not package:match("%.lua$") then
@@ -17,10 +27,21 @@ function mpm(package)
     end
 
     if exports("Utils.File").exists(path) then
-        return dofile(path)
+        local result = dofile(path)
+        mpmCache[package] = result
+        return result
     end
 
     error("Package '" .. package .. "' not found in /mpm/Packages")
+end
+
+--- Clear the mpm cache (for hot-reloading during development)
+function mpmClearCache(package)
+    if package then
+        mpmCache[package] = nil
+    else
+        mpmCache = {}
+    end
 end
 
 runModule = {
