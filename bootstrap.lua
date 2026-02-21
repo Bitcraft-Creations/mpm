@@ -32,6 +32,7 @@ bootstrapModule = {
         print("  info <pkg>       Package details")
         print("  tap <source>     Add repository")
         print("  startup [pkg]    Configure startup")
+        print("  bridge <host>    Connect to MCP AI server")
         print("  selfupdate       Update MPM")
         print("  help [cmd]       Show help")
         print("")
