@@ -11,12 +11,20 @@ installModule = {
     run = function(...)
         local Validation = exports("Utils.Validation")
         local PackageDisk = exports("Utils.PackageDisk")
+        local Storage = exports("Utils.Storage")
 
         local names = {...}
 
         if not Validation.requireAnyArg(names, installModule.usage) then
             return
         end
+
+        local hasSpace, spaceErr = Storage.ensureCriticalFree(8 * 1024, "/")
+        if not hasSpace then
+            print("Error: " .. (spaceErr or "Insufficient disk space"))
+            return
+        end
+        Storage.warnIfLow("/")
 
         local installed = 0
         local failed = 0
@@ -29,11 +37,17 @@ installModule = {
 
             if PackageDisk.isInstalled(name) then
                 print("Package '" .. name .. "' is already installed.")
-                print("  Use: mpm update " .. name)
+                local reason = PackageDisk.getInstallReason(name)
+                if reason ~= "manual" then
+                    PackageDisk.markAsManual(name)
+                    print("  Marked as manually installed.")
+                else
+                    print("  Use: mpm update " .. name)
+                end
                 goto nextPackage
             end
 
-            local success = PackageDisk.install(name)
+            local success = PackageDisk.install(name, "manual")
             if success then
                 installed = installed + 1
             else

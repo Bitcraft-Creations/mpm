@@ -22,6 +22,7 @@ mpm intro              Interactive tutorial
 mpm install <pkg>      Install package
 mpm remove <pkg>       Remove package
 mpm update [pkg]       Update packages
+mpm prune              Remove orphaned dependencies
 mpm search <query>     Search packages
 mpm list [remote]      List packages
 mpm info <pkg>         Package details
@@ -60,6 +61,7 @@ mpm install tap/package      # From specific tap
 
 ```bash
 mpm doctor                   # Check health
+mpm prune                    # Remove orphaned dependencies
 mpm reset                    # Clear packages
 mpm reset --hard             # Full reset (taps too)
 mpm selfupdate              # Update MPM

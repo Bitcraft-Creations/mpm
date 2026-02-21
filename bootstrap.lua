@@ -27,6 +27,7 @@ bootstrapModule = {
         print("  install <pkg>    Install packages")
         print("  remove <pkg>     Remove packages")
         print("  update [pkg]     Update packages")
+        print("  prune            Remove orphaned dependencies")
         print("  run <pkg>        Run a package")
         print("  list [remote]    List packages")
         print("  info <pkg>       Package details")

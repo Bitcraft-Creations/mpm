@@ -27,6 +27,16 @@ helpModule = {
             desc = "Alias for update",
             examples = {"mpm upgrade"}
         },
+        prune = {
+            usage = "mpm prune [--dry-run]",
+            desc = "Remove orphaned dependency packages",
+            examples = {"mpm prune", "mpm prune --dry-run"}
+        },
+        autoremove = {
+            usage = "mpm autoremove [--dry-run]",
+            desc = "Alias for prune",
+            examples = {"mpm autoremove"}
+        },
         list = {
             usage = "mpm list [remote]",
             desc = "List installed or available packages",
@@ -112,6 +122,7 @@ helpModule = {
         print("  install <pkg>    Install packages")
         print("  remove <pkg>     Remove packages")
         print("  update [pkg]     Update packages")
+        print("  prune            Remove orphaned dependencies")
         print("  search <query>   Search packages")
         print("  list [remote]    List packages")
         print("  info <pkg>       Package details")

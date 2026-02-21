@@ -13,6 +13,7 @@ doctorModule = {
         local Validation = exports("Utils.Validation")
         local TapRegistry = exports("Utils.TapRegistry")
         local PackageDisk = exports("Utils.PackageDisk")
+        local Storage = exports("Utils.Storage")
 
         local issues = {}
         local warnings = {}
@@ -116,6 +117,29 @@ doctorModule = {
             end
         end
 
+        -- Check 7: Disk usage
+        print("[*] Storage...")
+        local usage = Storage.getUsage("/")
+        if usage then
+            print("    " .. Storage.formatUsage(usage))
+            if usage.free < 64 * 1024 or usage.percent >= 92 then
+                table.insert(warnings, "Low disk space - run 'mpm prune' or remove packages")
+            end
+        else
+            table.insert(warnings, "Could not determine disk usage")
+        end
+
+        -- Check 8: Largest installed packages
+        print("[*] Largest packages...")
+        local largest = Storage.largestPackages(3)
+        if #largest == 0 then
+            print("    No packages installed")
+        else
+            for _, entry in ipairs(largest) do
+                print("    @" .. entry.name .. " - " .. Storage.formatBytes(entry.bytes))
+            end
+        end
+
         -- Results
         print("")
         print("--- Results ---")
@@ -144,6 +168,7 @@ doctorModule = {
             if #issues > 0 then
                 print("  mpm selfupdate    Reinstall core files")
             end
+            print("  mpm prune         Remove orphaned dependencies")
             print("  mpm reset --hard   Full reset")
         end
 

@@ -1,25 +1,33 @@
 local PackageDisk = nil
 
---[[
-    The PackageDisk module handles local disk operations for packages.
-
-    A package is a directory in /mpm/Packages/. Each package contains:
-    - manifest.json: Package metadata (includes _tap and _tapUrl for source tracking)
-      - name: Package identifier
-      - description: Human-readable description
-      - files: Array of files to download
-      - dependencies: (optional) Array of package names to install first
-      - _tap: Source tap name
-      - _tapUrl: Source tap URL
-]]
-
 local packageDirectory = "/mpm/Packages/"
+local MANUAL = "manual"
+local DEPENDENCY = "dependency"
+
+local function manifestPath(package)
+    return packageDirectory .. package .. "/manifest.json"
+end
+
+local function normalizeReason(reason)
+    if reason == DEPENDENCY then
+        return DEPENDENCY
+    end
+    return MANUAL
+end
+
+local function nowString()
+    if os and os.date then
+        return os.date("%Y-%m-%d %H:%M:%S")
+    end
+    return "unknown"
+end
 
 PackageDisk = {
     --- Install a package from a tap
     --- @param name string Package name (can be tap/package format)
+    --- @param installReason string|nil "manual" or "dependency"
     --- @return boolean success
-    install = function(name)
+    install = function(name, installReason)
         local Validation = exports("Utils.Validation")
         local File = exports("Utils.File")
         local Repo = exports("Utils.PackageRepository")
@@ -28,6 +36,8 @@ PackageDisk = {
             print("Error: Package name is required.")
             return false
         end
+
+        local reason = normalizeReason(installReason)
 
         -- Resolve the actual package name (without tap prefix for local storage)
         local _, tapName, pkgName = Repo.resolvePackage(name)
@@ -38,6 +48,9 @@ PackageDisk = {
             print("Error: " .. (err or "Package '" .. name .. "' not found."))
             return false
         end
+
+        manifest._installReason = reason
+        manifest._installedAt = nowString()
 
         -- Display package info
         print("")
@@ -52,26 +65,53 @@ PackageDisk = {
             for _, dep in ipairs(manifest.dependencies) do
                 if not PackageDisk.isInstalled(dep) then
                     print("Installing dependency: " .. dep)
-                    local depSuccess = PackageDisk.install(dep)
+                    local depSuccess = PackageDisk.install(dep, DEPENDENCY)
                     if not depSuccess then
-                        print("Warning: Failed to install dependency '" .. dep .. "'")
+                        print("Error: Failed to install dependency '" .. dep .. "'")
+                        return false
                     end
                 end
             end
         end
 
-        -- Save manifest locally (use pkgName for local path)
-        local manifestPath = packageDirectory .. pkgName .. "/manifest.json"
-        File.put(manifestPath, textutils.serializeJSON(manifest))
-
-        -- Install each file
+        local fileContents = {}
         if manifest.files and type(manifest.files) == "table" then
             for _, file in ipairs(manifest.files) do
-                local success = PackageDisk.installFile(name, pkgName, file)
+                local content, downloadErr = Repo.downloadFile(name, file)
+                if not content then
+                    print("Error: " .. (downloadErr or "Failed to download " .. file))
+                    return false
+                end
+                fileContents[file] = content
+            end
+        end
+
+        local path = packageDirectory .. pkgName
+        local existed = fs.exists(path)
+        if not existed then
+            fs.makeDir(path)
+        end
+
+        if not File.put(manifestPath(pkgName), textutils.serializeJSON(manifest)) then
+            print("Error: Failed to write manifest for '" .. pkgName .. "'")
+            if not existed then
+                File.delete(path)
+            end
+            return false
+        end
+
+        if manifest.files and type(manifest.files) == "table" then
+            for _, file in ipairs(manifest.files) do
+                local filePath = packageDirectory .. pkgName .. "/" .. file
+                local success = File.put(filePath, fileContents[file])
                 if success then
                     print("+ " .. file)
                 else
                     print("x " .. file .. " (failed)")
+                    if not existed then
+                        File.delete(path)
+                    end
+                    return false
                 end
             end
         end
@@ -131,6 +171,58 @@ PackageDisk = {
         return success
     end,
 
+    --- Promote an installed package to manual
+    --- @param package string
+    --- @return boolean success
+    markAsManual = function(package)
+        return PackageDisk.setInstallReason(package, MANUAL)
+    end,
+
+    --- Set install reason metadata
+    --- @param package string
+    --- @param reason string
+    --- @return boolean success
+    setInstallReason = function(package, reason)
+        local File = exports("Utils.File")
+        local manifest = PackageDisk.getManifest(package)
+        if not manifest then
+            return false
+        end
+
+        manifest._installReason = normalizeReason(reason)
+        return File.put(manifestPath(package), textutils.serializeJSON(manifest))
+    end,
+
+    --- Get install reason (defaults to manual for backward compatibility)
+    --- @param package string
+    --- @return string reason
+    getInstallReason = function(package)
+        local manifest = PackageDisk.getManifest(package)
+        if not manifest or not manifest._installReason then
+            return MANUAL
+        end
+        return normalizeReason(manifest._installReason)
+    end,
+
+    --- Resolve package dependency graph
+    --- @return table graph map: pkg -> {dep=true}
+    getDependencyGraph = function()
+        local graph = {}
+        local packages = PackageDisk.listInstalled()
+
+        for _, pkg in ipairs(packages) do
+            graph[pkg] = {}
+            local manifest = PackageDisk.getManifest(pkg)
+            if manifest and type(manifest.dependencies) == "table" then
+                for _, dep in ipairs(manifest.dependencies) do
+                    graph[pkg][dep] = true
+                end
+            end
+        end
+
+        return graph
+    end,
+
     --- Check if a package is installed locally
     --- @param package string Package name
     --- @return boolean installed
@@ -151,9 +243,7 @@ PackageDisk = {
             return nil
         end
 
-        local manifestPath = packageDirectory .. package .. "/manifest.json"
-        local content = File.get(manifestPath)
-
+        local content = File.get(manifestPath(package))
         if not content then
             return nil
         end
@@ -171,7 +261,6 @@ PackageDisk = {
             return {}
         end
 
-        -- Filter to only directories (packages)
         local result = {}
         for _, item in ipairs(packages) do
             if fs.isDir(packageDirectory .. item) then
