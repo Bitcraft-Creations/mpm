@@ -117,11 +117,15 @@ selfUpdateModule = {
 
     applyStagedFiles = function(manifest, staged)
         local File = exports("Utils.File")
+        local LuaMinifier = exports("Utils.LuaMinifier")
         local updatedFiles = {}
         local failedFiles = {}
 
         for _, file in ipairs(manifest) do
             local remoteContent = staged[file]
+            if LuaMinifier and LuaMinifier.shouldMinify(file) then
+                remoteContent = LuaMinifier.minify(remoteContent)
+            end
             local localPath = selfUpdateModule.localPathFor(file)
             local localContent = File.get(localPath)
 

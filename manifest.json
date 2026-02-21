@@ -21,6 +21,7 @@
   "Core/Commands/Update.lua",
   "Core/Commands/Upgrade.lua",
   "Core/Utils/File.lua",
+  "Core/Utils/LuaMinifier.lua",
   "Core/Utils/PackageDisk.lua",
   "Core/Utils/PackageRepository.lua",
   "Core/Utils/StartupConfig.lua",

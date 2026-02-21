@@ -31,6 +31,7 @@ PackageDisk = {
         local Validation = exports("Utils.Validation")
         local File = exports("Utils.File")
         local Repo = exports("Utils.PackageRepository")
+        local LuaMinifier = exports("Utils.LuaMinifier")
 
         if Validation.isEmpty(name) then
             print("Error: Package name is required.")
@@ -82,6 +83,9 @@ PackageDisk = {
                     print("Error: " .. (downloadErr or "Failed to download " .. file))
                     return false
                 end
+                if LuaMinifier and LuaMinifier.shouldMinify(file, manifest) then
+                    content = LuaMinifier.minify(content)
+                end
                 fileContents[file] = content
             end
         end
@@ -131,11 +135,15 @@ PackageDisk = {
     installFile = function(fullName, localName, file)
         local File = exports("Utils.File")
         local Repo = exports("Utils.PackageRepository")
+        local LuaMinifier = exports("Utils.LuaMinifier")
 
         local content, err = Repo.downloadFile(fullName, file)
         if not content then
             print("Error: " .. (err or "Failed to download " .. file))
             return false
+        end
+        if LuaMinifier and LuaMinifier.shouldMinify(file) then
+            content = LuaMinifier.minify(content)
         end
 
         local filePath = packageDirectory .. localName .. "/" .. file
