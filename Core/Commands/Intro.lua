@@ -18,7 +18,8 @@ introModule = {
         -- Track what we do for undo
         local actions = {
             packagesInstalled = {},
-            startupConfigured = false
+            startupConfigured = false,
+            startupPackage = nil
         }
 
         -- Welcome
@@ -128,6 +129,36 @@ introModule = {
             read()
         end
 
+        -- Offer cc-music
+        introModule.clear()
+        print("=== Step 3b: Music ===")
+        print("")
+        print("'cc-music' lets you stream YouTube music")
+        print("directly in Minecraft.")
+        print("")
+        print("Requirements:")
+        print("  - Advanced Computer")
+        print("  - Speaker connected (or Noisy Pocket Computer)")
+        print("")
+        print("Install cc-music? (y/n)")
+
+        local installMusic = read()
+        if installMusic:lower() == "y" then
+            print("")
+            print("Installing...")
+            print("")
+
+            local success = PackageDisk.install("cc-music")
+
+            if success then
+                table.insert(actions.packagesInstalled, "cc-music")
+            end
+
+            print("")
+            print("Press Enter to continue...")
+            read()
+        end
+
         -- Step 4: Running packages
         introModule.clear()
         print("=== Step 4: Running Packages ===")
@@ -137,33 +168,62 @@ introModule = {
             print("You have packages installed!")
             print("")
             print("Run a package with:")
-            print("  mpm run shelfos")
+            print("  mpm run <package>")
             print("")
             print("Run a specific script:")
             print("  mpm run tools/inspect_peripheral")
             print("")
-            print("Would you like to run 'shelfos' now? (y/n)")
-            print("(This will start the ShelfOS setup wizard)")
 
-            local runIt = read()
-            if runIt:lower() == "y" then
-                print("")
-                print("Starting ShelfOS...")
-                print("(Exit with Ctrl+T when done)")
-                print("")
-                sleep(1)
+            -- Determine which runnable packages are available
+            local hasShelfos = PackageDisk.isInstalled("shelfos")
+            local hasCcMusic = PackageDisk.isInstalled("cc-music")
 
-                -- Run the shelfos package through mpm run (sets up mpm() global)
-                if shell then
-                    shell.run("mpm run shelfos")
-                else
-                    local bootstrap = dofile("/mpm/bootstrap.lua")
-                    bootstrap.handleCommand({"run", "shelfos"})
+            if hasShelfos then
+                print("Would you like to run 'shelfos' now? (y/n)")
+                print("(This will start the ShelfOS setup wizard)")
+
+                local runIt = read()
+                if runIt:lower() == "y" then
+                    print("")
+                    print("Starting ShelfOS...")
+                    print("(Exit with Ctrl+T when done)")
+                    print("")
+                    sleep(1)
+
+                    if shell then
+                        shell.run("mpm run shelfos")
+                    else
+                        local bootstrap = dofile("/mpm/bootstrap.lua")
+                        bootstrap.handleCommand({"run", "shelfos"})
+                    end
+
+                    print("")
+                    print("Press Enter to continue...")
+                    read()
                 end
+            elseif hasCcMusic then
+                print("Would you like to run 'cc-music' now? (y/n)")
+                print("(Requires a Speaker to be connected)")
 
-                print("")
-                print("Press Enter to continue...")
-                read()
+                local runIt = read()
+                if runIt:lower() == "y" then
+                    print("")
+                    print("Starting cc-music...")
+                    print("(Exit with Ctrl+T when done)")
+                    print("")
+                    sleep(1)
+
+                    if shell then
+                        shell.run("mpm run cc-music")
+                    else
+                        local bootstrap = dofile("/mpm/bootstrap.lua")
+                        bootstrap.handleCommand({"run", "cc-music"})
+                    end
+
+                    print("")
+                    print("Press Enter to continue...")
+                    read()
+                end
             end
         else
             print("No packages installed yet.")
@@ -190,15 +250,28 @@ introModule = {
         print("")
 
         if #actions.packagesInstalled > 0 then
-            print("Set 'shelfos' as startup? (y/n)")
+            -- Pick a sensible default startup package from what was installed
+            local startupPkg = nil
+            if PackageDisk.isInstalled("shelfos") then
+                startupPkg = "shelfos"
+            elseif PackageDisk.isInstalled("cc-music") then
+                startupPkg = "cc-music"
+            end
 
-            local setStartup = read()
-            if setStartup:lower() == "y" then
-                StartupConfig.configure("shelfos", "")
-                actions.startupConfigured = true
-                print("")
-                print("[+] Startup configured!")
-                print("    This computer will run 'shelfos' on boot.")
+            if startupPkg then
+                print("Set '" .. startupPkg .. "' as startup? (y/n)")
+
+                local setStartup = read()
+                if setStartup:lower() == "y" then
+                    StartupConfig.configure(startupPkg, "")
+                    actions.startupConfigured = true
+                    actions.startupPackage = startupPkg
+                    print("")
+                    print("[+] Startup configured!")
+                    print("    This computer will run '" .. startupPkg .. "' on boot.")
+                end
+            else
+                print("Set startup with: mpm startup <package>")
             end
         else
             print("Install a package first, then run:")
@@ -248,7 +321,7 @@ introModule = {
 
         print("")
         if actions.startupConfigured then
-            print("  Startup: shelfos")
+            print("  Startup: " .. (actions.startupPackage or "configured"))
         else
             print("  Startup: not configured")
         end
