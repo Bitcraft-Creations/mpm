@@ -78,7 +78,28 @@ PackageDisk = {
         local fileContents = {}
         if manifest.files and type(manifest.files) == "table" then
             for _, file in ipairs(manifest.files) do
-                local content, downloadErr = Repo.downloadFile(name, file)
+                local content, downloadErr
+
+                -- file_urls: optional map of filename -> absolute URL.
+                -- Allows packages that live in their own repo to declare where
+                -- each file should be fetched from, avoiding duplication in
+                -- mpm-packages. Example manifest entry:
+                --   "file_urls": { "music.lua": "https://raw.githubusercontent.com/..." }
+                local override_url = manifest.file_urls and manifest.file_urls[file]
+                if override_url then
+                    local response, reqErr = Validation.safeHttpGet(override_url)
+                    if response then
+                        content = Validation.readResponse(response)
+                        if not content then
+                            downloadErr = "Failed to read response for " .. file
+                        end
+                    else
+                        downloadErr = reqErr or ("Failed to fetch " .. file .. " from " .. override_url)
+                    end
+                else
+                    content, downloadErr = Repo.downloadFile(name, file)
+                end
+
                 if not content then
                     print("Error: " .. (downloadErr or "Failed to download " .. file))
                     return false
